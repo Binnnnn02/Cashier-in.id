@@ -4,11 +4,11 @@ import { useAuth } from "./context/AuthContext";
 
 import MainLayout from "./layouts/MainLayout";
 
-import Dashboard from "./pages/dashboard";
-import Products from "./pages/products";
-import Statistics from "./pages/statistics";
-import Settings from "./pages/settings";
-import Account from "./pages/account";
+import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
+import Statistics from "./pages/Statistics";
+import Settings from "./pages/Settings";
+import Account from "./pages/Account";
 import History from "./pages/History";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
