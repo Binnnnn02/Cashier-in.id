@@ -54,7 +54,7 @@ export default function Dashboard() {
 
       {/* Dashboard Card */}
 
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
 
         <DashboardCard
           title="Jumlah Produk"
@@ -88,9 +88,9 @@ export default function Dashboard() {
 
       {/* Produk & Keranjang */}
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3">
 
-        <div className="col-span-2">
+        <div className="xl:col-span-2">
 
           <div className="bg-white rounded-2xl shadow-sm p-6">
 
@@ -124,7 +124,7 @@ export default function Dashboard() {
 
             {/* Produk */}
 
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 
               {filteredProducts.map((product) => (
 

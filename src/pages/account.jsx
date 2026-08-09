@@ -105,7 +105,7 @@ export default function Account() {
 
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2">
 
         <div className="bg-white rounded-2xl shadow-sm p-6">
 

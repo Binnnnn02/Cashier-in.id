@@ -8,36 +8,37 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  const { admin, setAdmin } = useAuth();
+  const {
+    admin,
+    login,
+  } = useAuth();
 
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
 
   if (admin) {
+
     return <Navigate to="/" replace />;
+
   }
 
-  const login = (e) => {
+  const handleLogin = (e) => {
 
     e.preventDefault();
 
-    if (
+    const result = login(
+      email,
+      password
+    );
 
-      email === "admin@berjuta.com" &&
-      password === "123456"
-
-    ) {
-
-      setAdmin({
-
-        email,
-
-      });
+    if (result.success) {
 
       toast.success("Login berhasil");
 
-      navigate("/");
+      navigate("/", {
+        replace: true,
+      });
 
       return;
 
@@ -49,43 +50,81 @@ export default function Login() {
 
   return (
 
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-emerald-50">
 
       <form
-        onSubmit={login}
-        className="bg-white p-8 rounded-2xl shadow-md w-[400px]"
+        onSubmit={handleLogin}
+        className="bg-white w-[420px] rounded-2xl shadow-xl p-8"
       >
 
-        <h1 className="text-3xl font-bold text-center mb-2">
-          BERJUTA CAFE
+        <h1 className="text-3xl font-bold text-center text-emerald-700">
+
+          KasirKu POS
+
         </h1>
 
-        <p className="text-center text-gray-500 mb-8">
+        <p className="text-center text-gray-500 mt-2 mb-8">
+
           Login Administrator
+
         </p>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full border rounded-xl p-3 mb-4"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <div className="mb-4">
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full border rounded-xl p-3 mb-6"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <label className="block text-sm mb-2">
+
+            Email
+
+          </label>
+
+          <input
+            type="email"
+            placeholder="Masukkan email"
+            value={email}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
+            className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            required
+          />
+
+        </div>
+
+        <div className="mb-6">
+
+          <label className="block text-sm mb-2">
+
+            Password
+
+          </label>
+
+          <input
+            type="password"
+            placeholder="Masukkan password"
+            value={password}
+            onChange={(e) =>
+              setPassword(e.target.value)
+            }
+            className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            required
+          />
+
+        </div>
 
         <button
           type="submit"
-          className="w-full bg-emerald-600 hover:bg-emerald-700 transition text-white py-3 rounded-xl"
+          className="w-full bg-emerald-600 hover:bg-emerald-700 transition text-white py-3 rounded-xl font-semibold"
         >
+
           Masuk
+
         </button>
+
+        <div className="mt-6 text-center text-sm text-gray-500">
+
+          © 2026 Berjuta Cafe POS
+
+        </div>
 
       </form>
 

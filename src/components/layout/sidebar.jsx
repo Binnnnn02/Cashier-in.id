@@ -36,7 +36,6 @@ const menus = [
     name: "Akun",
     icon: User,
     path: "/account",
-    
   },
   {
     name: "Riwayat",
@@ -45,16 +44,13 @@ const menus = [
   },
 ];
 
-export default function Sidebar() {
-
+export default function Sidebar({ closeSidebar }) {
   const { store } = useStore();
-  <h1 className="font-bold text-xl">
-  {store.name}
-  </h1>
 
   return (
-    <aside className="w-64 bg-emerald-700 text-white flex flex-col shadow-xl">
+    <aside className="w-72 lg:w-64 bg-emerald-700 text-white h-screen flex flex-col">
 
+      {/* Logo dan Nama Toko */}
       <div className="flex items-center gap-3 px-6 py-7 border-b border-emerald-600">
 
         <div className="bg-white text-emerald-700 p-2 rounded-xl">
@@ -63,50 +59,47 @@ export default function Sidebar() {
 
         <div>
           <h1 className="font-bold text-xl">
-          {store.name || "KasirKu"}
-        </h1>
+            {store?.name || "KasirKu"}
+          </h1>
 
-        <p className="text-sm text-emerald-100">
-          Point of Sale
-        </p>
+          <p className="text-sm text-emerald-100">
+            Point of Sale
+          </p>
         </div>
 
       </div>
 
+      {/* Menu */}
       <nav className="flex-1 p-4">
 
         {menus.map((menu) => {
-
           const Icon = menu.icon;
 
           return (
-
             <NavLink
-  key={menu.path}
-  to={menu.path}
-  className={({ isActive }) =>
-    `flex items-center gap-3 px-4 py-3 rounded-xl mb-2 transition-all duration-200 ${
-      isActive
-        ? "bg-white text-emerald-700 font-semibold shadow"
-        : "hover:bg-emerald-600"
-    }`
-  }
->
+              key={menu.path}
+              to={menu.path}
+              onClick={closeSidebar}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl mb-2 transition-all duration-200 ${
+                  isActive
+                    ? "bg-white text-emerald-700 font-semibold shadow"
+                    : "hover:bg-emerald-600"
+                }`
+              }
+            >
+              <Icon size={20} />
 
-  <Icon size={20} />
-
-  <span>
-    {menu.name}
-  </span>
-
-</NavLink>
-
+              <span>
+                {menu.name}
+              </span>
+            </NavLink>
           );
-
         })}
 
       </nav>
 
+      {/* Footer */}
       <div className="border-t border-emerald-600 p-5">
 
         <p className="text-sm text-emerald-100">

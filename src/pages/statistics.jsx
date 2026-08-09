@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useProducts } from "../context/ProductContext";
+
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,22 +14,27 @@ import {
 } from "recharts";
 
 export default function Statistics() {
+
   const { history } = useProducts();
 
   const [filter, setFilter] = useState("7");
 
   const filteredHistory = history.filter((trx) => {
+
     if (filter === "all") return true;
 
     const trxDate = new Date(trx.createdAt);
+
     const now = new Date();
 
     if (filter === "today") {
+
       return (
         trxDate.getDate() === now.getDate() &&
         trxDate.getMonth() === now.getMonth() &&
         trxDate.getFullYear() === now.getFullYear()
       );
+
     }
 
     const diff =
@@ -40,271 +46,482 @@ export default function Statistics() {
     if (filter === "30") return diff <= 30;
 
     return true;
+
   });
 
+
+  /* =========================
+     RINGKASAN DATA
+  ========================= */
+
   const totalIncome = filteredHistory.reduce(
-    (sum, trx) => sum + trx.total,
-    0
-  );
-
-  const totalTransaction = filteredHistory.length;
-
-  const totalItemSold = filteredHistory.reduce(
     (sum, trx) =>
-      sum +
-      trx.items.reduce(
-        (itemTotal, item) => itemTotal + item.qty,
-        0
-      ),
+      sum + Number(trx.total || 0),
     0
   );
+
+  const totalTransaction =
+    filteredHistory.length;
+
+  const totalItemSold =
+    filteredHistory.reduce(
+      (sum, trx) => {
+
+        const totalItem =
+          (trx.items || []).reduce(
+            (itemTotal, item) =>
+              itemTotal + Number(item.qty || 0),
+            0
+          );
+
+        return sum + totalItem;
+
+      },
+      0
+    );
 
   const averageTransaction =
     totalTransaction > 0
       ? totalIncome / totalTransaction
       : 0;
 
+
+  /* =========================
+     PRODUK TERLARIS
+  ========================= */
+
   const soldProducts = {};
 
   filteredHistory.forEach((trx) => {
-    trx.items.forEach((item) => {
+
+    (trx.items || []).forEach((item) => {
+
       if (!soldProducts[item.name]) {
+
         soldProducts[item.name] = 0;
+
       }
 
-      soldProducts[item.name] += item.qty;
+      soldProducts[item.name] +=
+        Number(item.qty || 0);
+
     });
+
   });
 
-  const bestSeller = Object.entries(soldProducts).sort(
-    (a, b) => b[1] - a[1]
-  )[0];
 
-  const chartData = filteredHistory.map(
-    (trx, index) => ({
-      name: `T${index + 1}`,
-      total: trx.total,
-    })
-  );
+  const sortedProducts =
+    Object.entries(soldProducts).sort(
+      (a, b) => b[1] - a[1]
+    );
 
-  const productChart = Object.entries(
-    soldProducts
-  ).map(([name, qty]) => ({
-    name,
-    qty,
-  }));
+
+  const bestSeller =
+    sortedProducts[0];
+
+
+  /* =========================
+     DATA CHART PENDAPATAN
+  ========================= */
+
+  const chartData =
+    filteredHistory
+      .slice()
+      .reverse()
+      .map((trx, index) => ({
+
+        name: `T${index + 1}`,
+
+        total:
+          Number(trx.total || 0),
+
+      }));
+
+
+  /* =========================
+     DATA CHART PRODUK
+  ========================= */
+
+  const productChart =
+    sortedProducts
+      .slice(0, 8)
+      .map(([name, qty]) => ({
+
+        name,
+        qty,
+
+      }));
+
+
+  const filters = [
+    {
+      value: "all",
+      label: "Semua",
+    },
+    {
+      value: "today",
+      label: "Hari Ini",
+    },
+    {
+      value: "7",
+      label: "7 Hari",
+    },
+    {
+      value: "30",
+      label: "30 Hari",
+    },
+  ];
+
 
   return (
+
     <div className="space-y-6">
+
+      {/* =========================
+          HEADER
+      ========================= */}
 
       <div>
 
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-2xl sm:text-3xl font-bold">
           Statistik
         </h1>
 
-        <p className="text-gray-500 mt-1">
+        <p className="text-sm sm:text-base text-gray-500 mt-1">
           Ringkasan seluruh penjualan.
         </p>
 
-        <div className="flex gap-3 mt-5 flex-wrap">
 
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-4 py-2 rounded-xl ${
-              filter === "all"
-                ? "bg-emerald-600 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Semua
-          </button>
+        {/* FILTER */}
 
-          <button
-            onClick={() => setFilter("today")}
-            className={`px-4 py-2 rounded-xl ${
-              filter === "today"
-                ? "bg-emerald-600 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            Hari Ini
-          </button>
+        <div className="flex gap-2 sm:gap-3 mt-5 flex-wrap">
 
-          <button
-            onClick={() => setFilter("7")}
-            className={`px-4 py-2 rounded-xl ${
-              filter === "7"
-                ? "bg-emerald-600 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            7 Hari
-          </button>
+          {filters.map((item) => (
 
-          <button
-            onClick={() => setFilter("30")}
-            className={`px-4 py-2 rounded-xl ${
-              filter === "30"
-                ? "bg-emerald-600 text-white"
-                : "bg-gray-200"
-            }`}
-          >
-            30 Hari
-          </button>
+            <button
+              key={item.value}
+              onClick={() =>
+                setFilter(item.value)
+              }
+              className={`
+                px-3
+                sm:px-4
+                py-2
+                text-sm
+                sm:text-base
+                rounded-xl
+                transition
+                ${
+                  filter === item.value
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }
+              `}
+            >
+
+              {item.label}
+
+            </button>
+
+          ))}
 
         </div>
 
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+      {/* =========================
+          STATISTIK CARD
+      ========================= */}
 
-          <p className="text-gray-500">
+      <div
+        className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          xl:grid-cols-5
+          gap-4
+          sm:gap-5
+          lg:gap-6
+        "
+      >
+
+        {/* Pendapatan */}
+
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+
+          <p className="text-gray-500 text-sm">
             Pendapatan
           </p>
 
-          <h2 className="text-3xl font-bold text-emerald-600 mt-2">
-            Rp{totalIncome.toLocaleString("id-ID")}
+          <h2 className="text-xl sm:text-2xl xl:text-3xl font-bold text-emerald-600 mt-2 truncate">
+
+            Rp
+            {totalIncome.toLocaleString(
+              "id-ID"
+            )}
+
           </h2>
 
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
 
-          <p className="text-gray-500">
+        {/* Total Transaksi */}
+
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+
+          <p className="text-gray-500 text-sm">
             Total Transaksi
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
+          <h2 className="text-2xl sm:text-3xl font-bold mt-2">
+
             {totalTransaction}
+
           </h2>
 
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
 
-          <p className="text-gray-500">
+        {/* Produk Terjual */}
+
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+
+          <p className="text-gray-500 text-sm">
             Produk Terjual
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
+          <h2 className="text-2xl sm:text-3xl font-bold mt-2">
+
             {totalItemSold}
+
           </h2>
 
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
 
-          <p className="text-gray-500">
+        {/* Rata-rata */}
+
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+
+          <p className="text-gray-500 text-sm">
             Rata-rata
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
-            Rp{Math.round(
+          <h2 className="text-xl sm:text-2xl xl:text-3xl font-bold mt-2 truncate">
+
+            Rp
+            {Math.round(
               averageTransaction
             ).toLocaleString("id-ID")}
+
           </h2>
 
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
 
-          <p className="text-gray-500">
+        {/* Produk Terlaris */}
+
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+
+          <p className="text-gray-500 text-sm">
             Produk Terlaris
           </p>
 
           {bestSeller ? (
+
             <>
-              <h2 className="text-3xl font-bold mt-2">
+
+              <h2 className="text-xl sm:text-2xl font-bold mt-2 truncate">
+
                 {bestSeller[0]}
+
               </h2>
 
-              <p className="text-emerald-600 mt-2">
+              <p className="text-sm text-emerald-600 mt-2">
+
                 Terjual {bestSeller[1]} pcs
+
               </p>
+
             </>
+
           ) : (
-            <p className="mt-3 text-gray-400">
+
+            <p className="mt-3 text-sm text-gray-400">
+
               Belum ada penjualan
+
             </p>
+
           )}
 
         </div>
 
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+      {/* =========================
+          CHART
+      ========================= */}
 
-          <h2 className="text-xl font-bold mb-5">
+      <div
+        className="
+          grid
+          grid-cols-1
+          xl:grid-cols-2
+          gap-4
+          sm:gap-6
+        "
+      >
+
+        {/* Grafik Pendapatan */}
+
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+
+          <h2 className="text-lg sm:text-xl font-bold mb-5">
             Grafik Pendapatan
           </h2>
 
-          <ResponsiveContainer
-            width="100%"
-            height={350}
-          >
+          {chartData.length > 0 ? (
 
-            <LineChart data={chartData}>
+            <ResponsiveContainer
+              width="100%"
+              height={280}
+            >
 
-              <CartesianGrid strokeDasharray="3 3" />
+              <LineChart
+                data={chartData}
+                margin={{
+                  top: 10,
+                  right: 10,
+                  left: -15,
+                  bottom: 0,
+                }}
+              >
 
-              <XAxis dataKey="name" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                />
 
-              <YAxis />
+                <XAxis
+                  dataKey="name"
+                  fontSize={12}
+                />
 
-              <Tooltip />
+                <YAxis
+                  fontSize={11}
+                />
 
-              <Line
-                type="monotone"
-                dataKey="total"
-                stroke="#10b981"
-                strokeWidth={3}
-              />
+                <Tooltip
+                  formatter={(value) =>
+                    `Rp${Number(
+                      value
+                    ).toLocaleString("id-ID")}`
+                  }
+                />
 
-            </LineChart>
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#10b981"
+                  strokeWidth={3}
+                  dot={{
+                    r: 4,
+                  }}
+                />
 
-          </ResponsiveContainer>
+              </LineChart>
+
+            </ResponsiveContainer>
+
+          ) : (
+
+            <div className="h-[280px] flex items-center justify-center text-gray-400">
+
+              Belum ada data penjualan
+
+            </div>
+
+          )}
 
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
 
-          <h2 className="text-xl font-bold mb-5">
+        {/* Produk Terlaris */}
+
+        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+
+          <h2 className="text-lg sm:text-xl font-bold mb-5">
             Produk Terlaris
           </h2>
 
-          <ResponsiveContainer
-            width="100%"
-            height={350}
-          >
+          {productChart.length > 0 ? (
 
-            <BarChart data={productChart}>
+            <ResponsiveContainer
+              width="100%"
+              height={280}
+            >
 
-              <CartesianGrid strokeDasharray="3 3" />
+              <BarChart
+                data={productChart}
+                margin={{
+                  top: 10,
+                  right: 10,
+                  left: -15,
+                  bottom: 20,
+                }}
+              >
 
-              <XAxis dataKey="name" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                />
 
-              <YAxis />
+                <XAxis
+                  dataKey="name"
+                  fontSize={11}
+                  interval={0}
+                  angle={-20}
+                  textAnchor="end"
+                  height={50}
+                />
 
-              <Tooltip />
+                <YAxis
+                  fontSize={11}
+                />
 
-              <Bar
-                dataKey="qty"
-                fill="#10b981"
-              />
+                <Tooltip
+                  formatter={(value) =>
+                    `${value} pcs`
+                  }
+                />
 
-            </BarChart>
+                <Bar
+                  dataKey="qty"
+                  fill="#10b981"
+                  radius={[6, 6, 0, 0]}
+                />
 
-          </ResponsiveContainer>
+              </BarChart>
+
+            </ResponsiveContainer>
+
+          ) : (
+
+            <div className="h-[280px] flex items-center justify-center text-gray-400">
+
+              Belum ada data produk terjual
+
+            </div>
+
+          )}
 
         </div>
 
       </div>
 
     </div>
+
   );
+
 }
