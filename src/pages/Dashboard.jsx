@@ -24,7 +24,9 @@ export default function Dashboard() {
   const categories = [
     "Semua",
     ...new Set(
-      products.map((product) => product.category)
+      products
+        .map((product) => product.category)
+        .filter(Boolean)
     ),
   ];
 
@@ -37,7 +39,7 @@ export default function Dashboard() {
         );
 
   const totalIncome = history.reduce(
-    (sum, trx) => sum + trx.total,
+    (sum, trx) => sum + Number(trx.total || 0),
     0
   );
 
@@ -45,16 +47,15 @@ export default function Dashboard() {
 
   const totalStock = products.reduce(
     (total, product) =>
-      total + Number(product.stock),
+      total + Number(product.stock || 0),
     0
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
 
       {/* Dashboard Card */}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
 
         <DashboardCard
           title="Jumlah Produk"
@@ -87,20 +88,19 @@ export default function Dashboard() {
       </div>
 
       {/* Produk & Keranjang */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
 
-      <div className="grid grid-cols-1 xl:grid-cols-3">
-
+        {/* Daftar Produk */}
         <div className="xl:col-span-2">
 
-          <div className="bg-white rounded-2xl shadow-sm p-6">
+          <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
 
-            <h2 className="text-2xl font-bold mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-5 sm:mb-6">
               Daftar Produk
             </h2>
 
             {/* Filter */}
-
-            <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex flex-wrap gap-2 sm:gap-3 mb-5 sm:mb-6">
 
               {categories.map((category) => (
 
@@ -109,11 +109,20 @@ export default function Dashboard() {
                   onClick={() =>
                     setSelectedCategory(category)
                   }
-                  className={`px-4 py-2 rounded-xl transition ${
-                    selectedCategory === category
-                      ? "bg-emerald-600 text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
+                  className={`
+                    px-3
+                    sm:px-4
+                    py-2
+                    rounded-xl
+                    text-sm
+                    sm:text-base
+                    transition
+                    ${
+                      selectedCategory === category
+                        ? "bg-emerald-600 text-white"
+                        : "bg-gray-200 hover:bg-gray-300"
+                    }
+                  `}
                 >
                   {category}
                 </button>
@@ -123,24 +132,35 @@ export default function Dashboard() {
             </div>
 
             {/* Produk */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredProducts.length > 0 ? (
 
-              {filteredProducts.map((product) => (
+                filteredProducts.map((product) => (
 
-                <ProductCard
-                  key={product.id}
-                  name={product.name}
-                  image={product.image}
-                  emoji={product.emoji}
-                  price={`Rp${product.price.toLocaleString(
-                    "id-ID"
-                  )}`}
-                  stock={product.stock}
-                  onAdd={() => addToCart(product)}
-                />
+                  <ProductCard
+                    key={product.id}
+                    name={product.name}
+                    image={product.image}
+                    emoji={product.emoji}
+                    price={`Rp${Number(
+                      product.price || 0
+                    ).toLocaleString("id-ID")}`}
+                    stock={product.stock}
+                    onAdd={() =>
+                      addToCart(product)
+                    }
+                  />
 
-              ))}
+                ))
+
+              ) : (
+
+                <div className="col-span-full py-10 text-center text-gray-400">
+                  Produk tidak ditemukan.
+                </div>
+
+              )}
 
             </div>
 
@@ -148,7 +168,12 @@ export default function Dashboard() {
 
         </div>
 
-        <Cart />
+        {/* Keranjang */}
+        <div className="w-full">
+
+          <Cart />
+
+        </div>
 
       </div>
 

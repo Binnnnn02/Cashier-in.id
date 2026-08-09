@@ -5,7 +5,7 @@ import Sidebar from "../components/layout/Sidebar";
 import Header from "../components/layout/Header";
 
 export default function MainLayout() {
-  const [open, setOpen] =useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-emerald-50">
@@ -21,17 +21,23 @@ export default function MainLayout() {
       {/* Sidebar */}
       <div
         className={`
-        fixed lg:static z-50
-        h-screen
-        transition-all duration-300
-        ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+          fixed lg:static
+          inset-y-0 left-0
+          z-50
+          w-64
+          shrink-0
+          transition-transform duration-300
+          ${open
+            ? "translate-x-0"
+            : "-translate-x-full lg:translate-x-0"
+          }
         `}
       >
         <Sidebar closeSidebar={() => setOpen(false)} />
       </div>
 
-      {/* Content */}
-      <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden">
+      {/* Main */}
+      <main className="flex-1 min-w-0 p-4 md:p-6 lg:p-8 overflow-x-hidden">
 
         <button
           onClick={() => setOpen(true)}
@@ -42,7 +48,7 @@ export default function MainLayout() {
 
         <Header />
 
-        <div className="mt-6">
+        <div className="mt-6 w-full">
           <Outlet />
         </div>
 
