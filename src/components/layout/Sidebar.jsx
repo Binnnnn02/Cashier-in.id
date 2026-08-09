@@ -48,7 +48,7 @@ export default function Sidebar({ closeSidebar }) {
   const { store } = useStore();
 
   return (
-    <aside className="w-72 lg:w-64 bg-emerald-700 text-white h-screen flex flex-col">
+    <aside className="w-full h-full bg-emerald-700 text-white flex flex-col">
 
       {/* Logo dan Nama Toko */}
       <div className="flex items-center gap-3 px-6 py-7 border-b border-emerald-600">
