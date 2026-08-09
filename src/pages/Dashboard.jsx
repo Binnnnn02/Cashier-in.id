@@ -1,7 +1,9 @@
 import { useState } from "react";
+
 import DashboardCard from "../components/dashboard/DashboardCard";
 import ProductCard from "../components/product/ProductCard";
 import Cart from "../components/cart/Cart";
+
 import { useProducts } from "../context/ProductContext";
 
 import {
@@ -11,15 +13,23 @@ import {
   Boxes,
 } from "lucide-react";
 
+
 export default function Dashboard() {
+
   const {
     products,
     addToCart,
     history,
   } = useProducts();
 
+
   const [selectedCategory, setSelectedCategory] =
     useState("Semua");
+
+
+  /* =========================
+     CATEGORY
+  ========================= */
 
   const categories = [
     "Semua",
@@ -30,6 +40,11 @@ export default function Dashboard() {
     ),
   ];
 
+
+  /* =========================
+     FILTER PRODUCT
+  ========================= */
+
   const filteredProducts =
     selectedCategory === "Semua"
       ? products
@@ -38,24 +53,50 @@ export default function Dashboard() {
             product.category === selectedCategory
         );
 
-  const totalIncome = history.reduce(
-    (sum, trx) => sum + Number(trx.total || 0),
-    0
-  );
 
-  const totalTransactions = history.length;
+  /* =========================
+     DASHBOARD DATA
+  ========================= */
 
-  const totalStock = products.reduce(
-    (total, product) =>
-      total + Number(product.stock || 0),
-    0
-  );
+  const totalIncome =
+    history.reduce(
+      (sum, trx) =>
+        sum + Number(trx.total || 0),
+      0
+    );
+
+
+  const totalTransactions =
+    history.length;
+
+
+  const totalStock =
+    products.reduce(
+      (total, product) =>
+        total + Number(product.stock || 0),
+      0
+    );
+
 
   return (
+
     <div className="space-y-6 sm:space-y-8">
 
-      {/* Dashboard Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+
+      {/* =========================
+          DASHBOARD CARD
+      ========================= */}
+
+      <div
+        className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          xl:grid-cols-4
+          gap-4
+          sm:gap-6
+        "
+      >
 
         <DashboardCard
           title="Jumlah Produk"
@@ -87,20 +128,63 @@ export default function Dashboard() {
 
       </div>
 
-      {/* Produk & Keranjang */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
 
-        {/* Daftar Produk */}
+      {/* =========================
+          PRODUK & KERANJANG
+      ========================= */}
+
+      <div
+        className="
+          grid
+          grid-cols-1
+          xl:grid-cols-3
+          gap-4
+          sm:gap-6
+        "
+      >
+
+
+        {/* =========================
+            DAFTAR PRODUK
+        ========================= */}
+
         <div className="xl:col-span-2">
 
-          <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+          <div
+            className="
+              bg-white
+              rounded-2xl
+              shadow-sm
+              p-4
+              sm:p-6
+            "
+          >
 
-            <h2 className="text-xl sm:text-2xl font-bold mb-5 sm:mb-6">
+            <h2
+              className="
+                text-xl
+                sm:text-2xl
+                font-bold
+                mb-5
+                sm:mb-6
+              "
+            >
               Daftar Produk
             </h2>
 
-            {/* Filter */}
-            <div className="flex flex-wrap gap-2 sm:gap-3 mb-5 sm:mb-6">
+
+            {/* CATEGORY FILTER */}
+
+            <div
+              className="
+                flex
+                flex-wrap
+                gap-2
+                sm:gap-3
+                mb-5
+                sm:mb-6
+              "
+            >
 
               {categories.map((category) => (
 
@@ -131,8 +215,19 @@ export default function Dashboard() {
 
             </div>
 
-            {/* Produk */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+
+            {/* PRODUCT GRID */}
+
+            <div
+              className="
+                grid
+                grid-cols-1
+                sm:grid-cols-2
+                lg:grid-cols-3
+                gap-3
+                sm:gap-5
+              "
+            >
 
               {filteredProducts.length > 0 ? (
 
@@ -156,7 +251,14 @@ export default function Dashboard() {
 
               ) : (
 
-                <div className="col-span-full py-10 text-center text-gray-400">
+                <div
+                  className="
+                    col-span-full
+                    py-10
+                    text-center
+                    text-gray-400
+                  "
+                >
                   Produk tidak ditemukan.
                 </div>
 
@@ -168,15 +270,23 @@ export default function Dashboard() {
 
         </div>
 
-        {/* Keranjang */}
+
+        {/* =========================
+            KERANJANG
+        ========================= */}
+
         <div className="w-full">
 
           <Cart />
 
         </div>
 
+
       </div>
 
+
     </div>
+
   );
+
 }
