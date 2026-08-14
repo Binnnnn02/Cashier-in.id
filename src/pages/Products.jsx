@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Search,
   Plus,
@@ -12,14 +13,15 @@ import DeleteModal from "../components/product/DeleteModal";
 import { useProducts } from "../context/ProductContext";
 
 export default function Product() {
-
   const { products, setProducts } = useProducts();
+
+  const [searchParams] = useSearchParams();
 
   const [isModalOpen, setIsModalOpen] =
     useState(false);
 
   const [search, setSearch] =
-    useState("");
+    useState(() => searchParams.get("search") || "");
 
   const [categoryFilter, setCategoryFilter] =
     useState("Semua");
@@ -32,6 +34,10 @@ export default function Product() {
 
   const [editProduct, setEditProduct] =
     useState(null);
+
+  useEffect(() => {
+    setSearch(searchParams.get("search") || "");
+  }, [searchParams]);
 
 
   /* =========================
