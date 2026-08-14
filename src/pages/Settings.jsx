@@ -10,7 +10,6 @@ import {
   Receipt,
   RotateCcw,
   Save,
-  Store,
   Upload,
 } from "lucide-react";
 import { useStore } from "../context/StoreContext";
@@ -33,10 +32,6 @@ export default function Settings() {
   const { store, setStore } = useStore();
 
   const [form, setForm] = useState({
-    name: store.name || "",
-    owner: store.owner || "",
-    phone: store.phone || "",
-    address: store.address || "",
     footer: store.footer || "Terima kasih telah berbelanja.",
     tax: store.tax || 0,
     discount: store.discount || 0,
@@ -79,17 +74,8 @@ export default function Settings() {
   };
 
   const saveSettings = () => {
-    if (!form.name.trim()) {
-      toast.error("Nama toko wajib diisi");
-      return;
-    }
-
     setStore((previous) => ({
       ...previous,
-      name: form.name.trim(),
-      owner: form.owner.trim(),
-      phone: form.phone.trim(),
-      address: form.address.trim(),
       footer: form.footer.trim(),
       tax: Number(form.tax || 0),
       discount: Number(form.discount || 0),
@@ -107,10 +93,7 @@ export default function Settings() {
       exportedAt: new Date().toISOString(),
       products: JSON.parse(localStorage.getItem("products") || "[]"),
       history: JSON.parse(localStorage.getItem("history") || "[]"),
-      store: {
-        ...store,
-        ...form,
-      },
+      store,
     };
 
     const blob = new Blob([JSON.stringify(backup, null, 2)], {
@@ -165,11 +148,13 @@ export default function Settings() {
   };
 
   const resetAll = () => {
-    const confirmed = window.confirm(
-      "Yakin ingin menghapus seluruh produk, transaksi, dan pengaturan?"
-    );
-
-    if (!confirmed) return;
+    if (
+      !window.confirm(
+        "Yakin ingin menghapus seluruh produk, transaksi, dan pengaturan?"
+      )
+    ) {
+      return;
+    }
 
     localStorage.clear();
     toast.success("Semua data berhasil dihapus");
@@ -182,61 +167,14 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">Pengaturan</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">
+          Pengaturan Sistem
+        </h1>
 
         <p className="mt-1 text-gray-500">
-          Kelola informasi toko dan sistem aplikasi.
+          Kelola struk, pembayaran, notifikasi, dan data aplikasi.
         </p>
       </div>
-
-      <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
-        <div className="mb-6 flex items-center gap-3">
-          <Store className="text-emerald-600" />
-          <h2 className="text-xl font-bold">Informasi Toko</h2>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <div>
-            <label className="text-sm text-gray-500">Nama Toko</label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(event) => updateForm("name", event.target.value)}
-              className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-500">Nama Pemilik</label>
-            <input
-              type="text"
-              value={form.owner}
-              onChange={(event) => updateForm("owner", event.target.value)}
-              className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-500">Nomor HP</label>
-            <input
-              type="tel"
-              value={form.phone}
-              onChange={(event) => updateForm("phone", event.target.value)}
-              className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-500">Alamat</label>
-            <input
-              type="text"
-              value={form.address}
-              onChange={(event) => updateForm("address", event.target.value)}
-              className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-        </div>
-      </section>
 
       <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
         <div className="mb-6 flex items-center gap-3">
@@ -260,7 +198,9 @@ export default function Settings() {
               <input
                 type="checkbox"
                 checked={form.receipt[key]}
-                onChange={(event) => updateReceipt(key, event.target.checked)}
+                onChange={(event) =>
+                  updateReceipt(key, event.target.checked)
+                }
                 className="h-4 w-4 accent-emerald-600"
               />
             </label>
@@ -270,6 +210,7 @@ export default function Settings() {
         <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
             <label className="text-sm text-gray-500">Pajak (%)</label>
+
             <input
               type="number"
               min="0"
@@ -284,12 +225,15 @@ export default function Settings() {
             <label className="text-sm text-gray-500">
               Diskon Default (%)
             </label>
+
             <input
               type="number"
               min="0"
               max="100"
               value={form.discount}
-              onChange={(event) => updateForm("discount", event.target.value)}
+              onChange={(event) =>
+                updateForm("discount", event.target.value)
+              }
               className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
@@ -297,6 +241,7 @@ export default function Settings() {
 
         <div className="mt-5">
           <label className="text-sm text-gray-500">Footer Struk</label>
+
           <textarea
             rows={3}
             value={form.footer}
@@ -314,7 +259,9 @@ export default function Settings() {
 
         <select
           value={form.paymentMethod}
-          onChange={(event) => updateForm("paymentMethod", event.target.value)}
+          onChange={(event) =>
+            updateForm("paymentMethod", event.target.value)
+          }
           className="w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="Tunai">Tunai</option>

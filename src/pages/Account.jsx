@@ -28,9 +28,11 @@ export default function Account() {
   const [openPassword, setOpenPassword] = useState(false);
 
   const [profile, setProfile] = useState({
+    storeName: store.name || "",
     owner: store.owner || "",
     email: admin?.email || account?.email || "",
     phone: store.phone || "",
+    address: store.address || "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -50,15 +52,22 @@ export default function Account() {
   const saveProfile = (event) => {
     event.preventDefault();
 
-    if (!profile.owner.trim() || !profile.email.trim()) {
-      toast.error("Nama dan email wajib diisi");
+    if (!profile.storeName.trim() || !profile.owner.trim()) {
+      toast.error("Nama toko dan pemilik wajib diisi");
+      return;
+    }
+
+    if (!profile.email.trim()) {
+      toast.error("Email wajib diisi");
       return;
     }
 
     setStore((previous) => ({
       ...previous,
+      name: profile.storeName.trim(),
       owner: profile.owner.trim(),
       phone: profile.phone.trim(),
+      address: profile.address.trim(),
       email: profile.email.trim(),
     }));
 
@@ -72,7 +81,7 @@ export default function Account() {
     }));
 
     setOpenProfile(false);
-    toast.success("Profil berhasil diperbarui");
+    toast.success("Profil dan informasi toko berhasil diperbarui");
   };
 
   const changePassword = (event) => {
@@ -138,9 +147,12 @@ export default function Account() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold sm:text-3xl">Akun</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">
+          Profil & Toko
+        </h1>
+
         <p className="mt-1 text-gray-500">
-          Informasi akun dan toko.
+          Kelola informasi akun dan toko Anda.
         </p>
       </div>
 
@@ -152,11 +164,11 @@ export default function Account() {
 
           <div>
             <h2 className="text-2xl font-bold sm:text-3xl">
-              {store.owner || "Admin"}
+              {store.name || "KasirKu"}
             </h2>
 
             <p className="mt-1 text-gray-500">
-              {admin?.email || account?.email}
+              {store.owner || "Pemilik Toko"}
             </p>
 
             <span className="mt-3 inline-block rounded-full bg-emerald-100 px-4 py-1 text-sm font-medium text-emerald-700">
@@ -168,7 +180,7 @@ export default function Account() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="mb-6 text-xl font-bold">Informasi Akun</h2>
+          <h2 className="mb-6 text-xl font-bold">Informasi Toko</h2>
 
           <div className="space-y-5">
             {infoItems.map(({ icon: Icon, label, value }) => (
@@ -230,7 +242,7 @@ export default function Account() {
             className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white hover:bg-emerald-700"
           >
             <Pencil size={18} />
-            Edit Profil
+            Edit Profil & Toko
           </button>
 
           <button
@@ -257,10 +269,10 @@ export default function Account() {
         <div className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center sm:p-4">
           <form
             onSubmit={saveProfile}
-            className="w-full rounded-t-3xl bg-white p-5 sm:max-w-md sm:rounded-2xl sm:p-6"
+            className="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 sm:max-w-md sm:rounded-2xl sm:p-6"
           >
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold">Edit Profil</h2>
+              <h2 className="text-xl font-bold">Edit Profil & Toko</h2>
 
               <button
                 type="button"
@@ -273,7 +285,24 @@ export default function Account() {
 
             <div className="space-y-4">
               <div>
+                <label className="text-sm font-medium">Nama Toko</label>
+
+                <input
+                  type="text"
+                  value={profile.storeName}
+                  onChange={(event) =>
+                    setProfile((previous) => ({
+                      ...previous,
+                      storeName: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
                 <label className="text-sm font-medium">Nama Pemilik</label>
+
                 <input
                   type="text"
                   value={profile.owner}
@@ -289,6 +318,7 @@ export default function Account() {
 
               <div>
                 <label className="text-sm font-medium">Email</label>
+
                 <input
                   type="email"
                   value={profile.email}
@@ -304,6 +334,7 @@ export default function Account() {
 
               <div>
                 <label className="text-sm font-medium">Nomor HP</label>
+
                 <input
                   type="tel"
                   value={profile.phone}
@@ -316,13 +347,29 @@ export default function Account() {
                   className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
+
+              <div>
+                <label className="text-sm font-medium">Alamat Toko</label>
+
+                <textarea
+                  rows={3}
+                  value={profile.address}
+                  onChange={(event) =>
+                    setProfile((previous) => ({
+                      ...previous,
+                      address: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full resize-none rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
               className="mt-6 w-full rounded-xl bg-emerald-600 py-3 font-semibold text-white hover:bg-emerald-700"
             >
-              Simpan Profil
+              Simpan Profil & Toko
             </button>
           </form>
         </div>
