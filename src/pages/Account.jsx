@@ -1,361 +1,414 @@
+// src/pages/Account.jsx
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
+import {
+  Calendar,
+  Crown,
+  Lock,
+  LogOut,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+  ShieldCheck,
+  Store,
+  User,
+  X,
+} from "lucide-react";
 import { useStore } from "../context/StoreContext";
 import { useAuth } from "../context/AuthContext";
 
-import {
-  User,
-  Store,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Crown,
-  ShieldCheck,
-  Camera,
-  Pencil,
-  Lock,
-  LogOut,
-} from "lucide-react";
-
 export default function Account() {
-
   const navigate = useNavigate();
+  const { store, setStore } = useStore();
+  const { admin, account, setAdmin, updateAccount } = useAuth();
 
-  const { store } = useStore();
+  const [openProfile, setOpenProfile] = useState(false);
+  const [openPassword, setOpenPassword] = useState(false);
 
-  const { admin, setAdmin } = useAuth();
+  const [profile, setProfile] = useState({
+    owner: store.owner || "",
+    email: admin?.email || account?.email || "",
+    phone: store.phone || "",
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   const logout = () => {
-
-    if (!window.confirm("Yakin ingin logout?"))
-      return;
+    if (!window.confirm("Yakin ingin logout?")) return;
 
     setAdmin(null);
-
     toast.success("Logout berhasil");
-
     navigate("/login");
-
   };
 
+  const saveProfile = (event) => {
+    event.preventDefault();
+
+    if (!profile.owner.trim() || !profile.email.trim()) {
+      toast.error("Nama dan email wajib diisi");
+      return;
+    }
+
+    setStore((previous) => ({
+      ...previous,
+      owner: profile.owner.trim(),
+      phone: profile.phone.trim(),
+      email: profile.email.trim(),
+    }));
+
+    updateAccount({
+      email: profile.email.trim(),
+    });
+
+    setAdmin((previous) => ({
+      ...previous,
+      email: profile.email.trim(),
+    }));
+
+    setOpenProfile(false);
+    toast.success("Profil berhasil diperbarui");
+  };
+
+  const changePassword = (event) => {
+    event.preventDefault();
+
+    if (passwordData.currentPassword !== account.password) {
+      toast.error("Password saat ini tidak sesuai");
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error("Password baru minimal 6 karakter");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("Konfirmasi password tidak sama");
+      return;
+    }
+
+    updateAccount({
+      password: passwordData.newPassword,
+    });
+
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+
+    setOpenPassword(false);
+    toast.success("Password berhasil diubah");
+  };
+
+  const infoItems = [
+    {
+      icon: Store,
+      label: "Nama Toko",
+      value: store.name || "-",
+    },
+    {
+      icon: User,
+      label: "Pemilik",
+      value: store.owner || "-",
+    },
+    {
+      icon: Mail,
+      label: "Email",
+      value: admin?.email || account?.email || "-",
+    },
+    {
+      icon: Phone,
+      label: "Nomor HP",
+      value: store.phone || "-",
+    },
+    {
+      icon: MapPin,
+      label: "Alamat",
+      value: store.address || "-",
+    },
+  ];
+
   return (
-
     <div className="space-y-6">
-
       <div>
-
-        <h1 className="text-3xl font-bold">
-          Akun
-        </h1>
-
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold sm:text-3xl">Akun</h1>
+        <p className="mt-1 text-gray-500">
           Informasi akun dan toko.
         </p>
-
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm p-8">
-
-        <div className="flex items-center gap-8">
-
-          <div className="relative">
-
-            <div className="w-28 h-28 rounded-full bg-emerald-600 flex items-center justify-center">
-
-              <User
-                size={55}
-                className="text-white"
-              />
-
-            </div>
-
-            <button
-              className="absolute bottom-0 right-0 bg-white rounded-full shadow p-2"
-            >
-              <Camera size={18} />
-            </button>
-
+      <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
+          <div className="grid h-24 w-24 shrink-0 place-items-center rounded-full bg-emerald-600 sm:h-28 sm:w-28">
+            <User size={50} className="text-white" />
           </div>
 
           <div>
-
-            <h2 className="text-3xl font-bold">
-
-              {store.name}
-
+            <h2 className="text-2xl font-bold sm:text-3xl">
+              {store.owner || "Admin"}
             </h2>
 
-            <p className="text-gray-500 mt-1">
-
-              {store.owner || "Owner"}
-
+            <p className="mt-1 text-gray-500">
+              {admin?.email || account?.email}
             </p>
 
-            <span className="inline-block mt-3 bg-emerald-100 text-emerald-700 px-4 py-1 rounded-full">
-
-              Starter Plan
-
+            <span className="mt-3 inline-block rounded-full bg-emerald-100 px-4 py-1 text-sm font-medium text-emerald-700">
+              {account?.role || "Owner"}
             </span>
-
           </div>
-
         </div>
-
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2">
-
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-
-          <h2 className="text-xl font-bold mb-6">
-
-            Informasi Akun
-
-          </h2>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="mb-6 text-xl font-bold">Informasi Akun</h2>
 
           <div className="space-y-5">
+            {infoItems.map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex items-center gap-4">
+                <Icon className="shrink-0 text-emerald-600" size={21} />
 
-            <div className="flex items-center gap-4">
-
-              <Store className="text-emerald-600" />
-
-              <div>
-
-                <p className="text-gray-500 text-sm">
-
-                  Nama Toko
-
-                </p>
-
-                <h3 className="font-semibold">
-
-                  {store.name}
-
-                </h3>
-
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-500">{label}</p>
+                  <p className="truncate font-semibold">{value}</p>
+                </div>
               </div>
-
-            </div>
-
-            <div className="flex items-center gap-4">
-
-              <User className="text-emerald-600" />
-
-              <div>
-
-                <p className="text-gray-500 text-sm">
-
-                  Pemilik
-
-                </p>
-
-                <h3 className="font-semibold">
-
-                  {store.owner || "-"}
-
-                </h3>
-
-              </div>
-
-            </div>
-
-            <div className="flex items-center gap-4">
-
-              <Mail className="text-emerald-600" />
-
-              <div>
-
-                <p className="text-gray-500 text-sm">
-
-                  Email
-
-                </p>
-
-                <h3 className="font-semibold">
-
-                  {admin?.email || "-"}
-
-                </h3>
-
-              </div>
-
-            </div>
-
-            <div className="flex items-center gap-4">
-
-              <Phone className="text-emerald-600" />
-
-              <div>
-
-                <p className="text-gray-500 text-sm">
-
-                  Nomor HP
-
-                </p>
-
-                <h3 className="font-semibold">
-
-                  {store.phone || "-"}
-
-                </h3>
-
-              </div>
-
-            </div>
-
-            <div className="flex items-center gap-4">
-
-              <MapPin className="text-emerald-600" />
-
-              <div>
-
-                <p className="text-gray-500 text-sm">
-
-                  Alamat
-
-                </p>
-
-                <h3 className="font-semibold">
-
-                  {store.address || "-"}
-
-                </h3>
-
-              </div>
-
-            </div>
-
+            ))}
           </div>
-
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-
-          <h2 className="text-xl font-bold mb-6">
-
-            Status Akun
-
-          </h2>
+        <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="mb-6 text-xl font-bold">Status Akun</h2>
 
           <div className="space-y-5">
-
             <div className="flex items-center gap-4">
-
-              <Calendar className="text-blue-600" />
+              <Calendar className="text-blue-600" size={21} />
 
               <div>
-
-                <p className="text-gray-500 text-sm">
-
-                  Bergabung
-
-                </p>
-
-                <h3 className="font-semibold">
-
+                <p className="text-sm text-gray-500">Hari ini</p>
+                <p className="font-semibold">
                   {new Date().toLocaleDateString("id-ID")}
-
-                </h3>
-
+                </p>
               </div>
-
             </div>
 
             <div className="flex items-center gap-4">
-
-              <Crown className="text-yellow-500" />
+              <Crown className="text-yellow-500" size={21} />
 
               <div>
-
-                <p className="text-gray-500 text-sm">
-
-                  Paket
-
-                </p>
-
-                <h3 className="font-semibold">
-
-                  Starter Plan
-
-                </h3>
-
+                <p className="text-sm text-gray-500">Paket</p>
+                <p className="font-semibold">Starter Plan</p>
               </div>
-
             </div>
 
             <div className="flex items-center gap-4">
-
-              <ShieldCheck className="text-green-600" />
+              <ShieldCheck className="text-emerald-600" size={21} />
 
               <div>
-
-                <p className="text-gray-500 text-sm">
-
-                  Status
-
-                </p>
-
-                <h3 className="font-semibold text-green-600">
-
-                  Aktif
-
-                </h3>
-
+                <p className="text-sm text-gray-500">Status</p>
+                <p className="font-semibold text-emerald-600">Aktif</p>
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+        <h2 className="mb-6 text-xl font-bold">Pengaturan Akun</h2>
 
-        <h2 className="text-xl font-bold mb-6">
-
-          Pengaturan Akun
-
-        </h2>
-
-        <div className="flex flex-wrap gap-4">
-
-          <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl">
-
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <button
+            type="button"
+            onClick={() => setOpenProfile(true)}
+            className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-medium text-white hover:bg-emerald-700"
+          >
             <Pencil size={18} />
-
             Edit Profil
-
-          </button>
-
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl">
-
-            <Lock size={18} />
-
-            Ganti Password
-
           </button>
 
           <button
-            onClick={logout}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl"
+            type="button"
+            onClick={() => setOpenPassword(true)}
+            className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700"
           >
-
-            <LogOut size={18} />
-
-            Logout
-
+            <Lock size={18} />
+            Ganti Password
           </button>
 
+          <button
+            type="button"
+            onClick={logout}
+            className="flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-medium text-white hover:bg-red-700"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
         </div>
-
       </div>
 
+      {openProfile && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center sm:p-4">
+          <form
+            onSubmit={saveProfile}
+            className="w-full rounded-t-3xl bg-white p-5 sm:max-w-md sm:rounded-2xl sm:p-6"
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold">Edit Profil</h2>
+
+              <button
+                type="button"
+                onClick={() => setOpenProfile(false)}
+                className="rounded-lg p-2 hover:bg-gray-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Nama Pemilik</label>
+                <input
+                  type="text"
+                  value={profile.owner}
+                  onChange={(event) =>
+                    setProfile((previous) => ({
+                      ...previous,
+                      owner: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Email</label>
+                <input
+                  type="email"
+                  value={profile.email}
+                  onChange={(event) =>
+                    setProfile((previous) => ({
+                      ...previous,
+                      email: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Nomor HP</label>
+                <input
+                  type="tel"
+                  value={profile.phone}
+                  onChange={(event) =>
+                    setProfile((previous) => ({
+                      ...previous,
+                      phone: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="mt-6 w-full rounded-xl bg-emerald-600 py-3 font-semibold text-white hover:bg-emerald-700"
+            >
+              Simpan Profil
+            </button>
+          </form>
+        </div>
+      )}
+
+      {openPassword && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center sm:p-4">
+          <form
+            onSubmit={changePassword}
+            className="w-full rounded-t-3xl bg-white p-5 sm:max-w-md sm:rounded-2xl sm:p-6"
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold">Ganti Password</h2>
+
+              <button
+                type="button"
+                onClick={() => setOpenPassword(false)}
+                className="rounded-lg p-2 hover:bg-gray-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">
+                  Password Saat Ini
+                </label>
+
+                <input
+                  type="password"
+                  value={passwordData.currentPassword}
+                  onChange={(event) =>
+                    setPasswordData((previous) => ({
+                      ...previous,
+                      currentPassword: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Password Baru</label>
+
+                <input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(event) =>
+                    setPasswordData((previous) => ({
+                      ...previous,
+                      newPassword: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">
+                  Konfirmasi Password Baru
+                </label>
+
+                <input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(event) =>
+                    setPasswordData((previous) => ({
+                      ...previous,
+                      confirmPassword: event.target.value,
+                    }))
+                  }
+                  className="mt-1 w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="mt-6 w-full rounded-xl bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700"
+            >
+              Ubah Password
+            </button>
+          </form>
+        </div>
+      )}
     </div>
-
   );
-
 }
