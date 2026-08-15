@@ -1,29 +1,46 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
+const paymentMethods = [
+  "Tunai",
+  "QRIS",
+  "Debit",
+  "Transfer",
+  "E-Wallet",
+];
+
 export default function PaymentModal({
   open,
+  subtotal = 0,
+  discountAmount = 0,
+  taxAmount = 0,
   total,
   onClose,
   onPay,
 }) {
   const [money, setMoney] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("Tunai");
 
   useEffect(() => {
     if (open) {
       setMoney("");
+      setPaymentMethod("Tunai");
     }
   }, [open]);
 
   if (!open) return null;
 
-  const paid = Number(money || 0);
+  const isCash = paymentMethod === "Tunai";
+
+  const paid = isCash ? Number(money || 0) : total;
   const change = paid - total;
+
+  const canPay = isCash ? paid >= total : true;
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-      <div className="bg-white rounded-2xl w-[450px] p-6">
+      <div className="bg-white rounded-2xl w-[450px] max-h-[90vh] overflow-y-auto p-6">
 
         <div className="flex justify-between items-center mb-6">
 
@@ -51,37 +68,110 @@ export default function PaymentModal({
 
           </div>
 
-          <input
-            type="number"
-            placeholder="Masukkan uang pelanggan"
-            value={money}
-            onChange={(e) => setMoney(e.target.value)}
-            className="w-full border rounded-xl p-3"
-          />
+          {/* Metode Pembayaran */}
 
-          {/* Tombol Nominal Cepat */}
+          <div>
 
-          <div className="grid grid-cols-4 gap-2">
+            <label className="font-semibold text-sm text-gray-600">
+              Metode Pembayaran
+            </label>
 
-            {[10000, 20000, 50000, 100000].map((nominal) => (
+            <div className="grid grid-cols-3 gap-2 mt-2">
 
-              <button
-                key={nominal}
-                onClick={() => setMoney(String(nominal))}
-                className="bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-sm"
-              >
-                {nominal >= 1000
-                  ? `${nominal / 1000}K`
-                  : nominal}
-              </button>
+              {paymentMethods.map((method) => (
 
-            ))}
+                <button
+                  key={method}
+                  onClick={() => setPaymentMethod(method)}
+                  className={`py-2 rounded-xl text-sm border transition ${
+                    paymentMethod === method
+                      ? "bg-emerald-600 text-white border-emerald-600"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  {method}
+                </button>
+
+              ))}
+
+            </div>
 
           </div>
+
+          {isCash ? (
+
+            <>
+
+              <input
+                type="number"
+                placeholder="Masukkan uang pelanggan"
+                value={money}
+                onChange={(e) => setMoney(e.target.value)}
+                className="w-full border rounded-xl p-3"
+              />
+
+              {/* Tombol Nominal Cepat */}
+
+              <div className="grid grid-cols-4 gap-2">
+
+                {[10000, 20000, 50000, 100000].map((nominal) => (
+
+                  <button
+                    key={nominal}
+                    onClick={() => setMoney(String(nominal))}
+                    className="bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-sm"
+                  >
+                    {nominal >= 1000
+                      ? `${nominal / 1000}K`
+                      : nominal}
+                  </button>
+
+                ))}
+
+              </div>
+
+            </>
+
+          ) : (
+
+            <div className="border rounded-xl p-4 bg-emerald-50 text-emerald-700 text-sm">
+              Pembayaran via {paymentMethod} dianggap lunas sesuai total belanja.
+            </div>
+
+          )}
 
           {/* Ringkasan */}
 
           <div className="border rounded-xl p-4 space-y-3">
+
+            {discountAmount > 0 && (
+
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>Subtotal</span>
+                <span>Rp{subtotal.toLocaleString("id-ID")}</span>
+              </div>
+
+            )}
+
+            {discountAmount > 0 && (
+
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>Diskon</span>
+                <span className="text-red-500">
+                  -Rp{discountAmount.toLocaleString("id-ID")}
+                </span>
+              </div>
+
+            )}
+
+            {taxAmount > 0 && (
+
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>Pajak</span>
+                <span>Rp{taxAmount.toLocaleString("id-ID")}</span>
+              </div>
+
+            )}
 
             <div className="flex justify-between">
 
@@ -116,14 +206,14 @@ export default function PaymentModal({
                     : "text-red-600"
                 }
               >
-                {paid === 0
+                {isCash && paid === 0
                   ? "-"
                   : `Rp${change.toLocaleString("id-ID")}`}
               </span>
 
             </div>
 
-            {paid > 0 && paid < total && (
+            {isCash && paid > 0 && paid < total && (
 
               <p className="text-red-500 text-sm">
                 Uang pelanggan masih kurang.
@@ -145,16 +235,20 @@ export default function PaymentModal({
           </button>
 
           <button
-            disabled={paid < total}
+            disabled={!canPay}
             onClick={() => {
 
-              onPay();
+              onPay({
+                paymentMethod,
+                paid,
+                change,
+              });
 
               onClose();
 
             }}
             className={`px-5 py-2 rounded-xl text-white transition ${
-              paid >= total
+              canPay
                 ? "bg-emerald-600 hover:bg-emerald-700"
                 : "bg-gray-400 cursor-not-allowed"
             }`}

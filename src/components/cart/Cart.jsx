@@ -15,9 +15,6 @@ export default function Cart() {
 
   const [openPayment, setOpenPayment] = useState(false);
 
-  const [paymentMethod, setPaymentMethod] =
-    useState("Tunai");
-
   const [openInvoice, setOpenInvoice] =
     useState(false);
 
@@ -28,17 +25,40 @@ useState({
 
   cart: [],
 
+  subtotal: 0,
+  discountAmount: 0,
+  taxAmount: 0,
   total: 0,
 
   paymentMethod: "Tunai",
+  paid: 0,
+  change: 0,
 
 });
 
-  const total = cart.reduce(
+  const subtotal = cart.reduce(
     (sum, item) =>
       sum + item.price * item.qty,
     0
   );
+
+  // Diskon & pajak mengikuti pengaturan di halaman Settings
+  const discountPercent =
+    Number(localStorage.getItem("discount")) || 0;
+
+  const taxPercent =
+    Number(localStorage.getItem("tax")) || 0;
+
+  const discountAmount =
+    Math.round(subtotal * (discountPercent / 100));
+
+  const taxAmount =
+    Math.round(
+      (subtotal - discountAmount) * (taxPercent / 100)
+    );
+
+  const total =
+    subtotal - discountAmount + taxAmount;
 
   return (
 
@@ -116,38 +136,39 @@ useState({
 
       }
 
-      <div className="mt-6 flex justify-between text-xl font-bold">
+      {/* Ringkasan Belanja */}
 
-        <span>Total</span>
+      <div className="mt-6 space-y-2">
 
-        <span>
-          Rp{total.toLocaleString("id-ID")}
-        </span>
+        <div className="flex justify-between text-gray-600">
+          <span>Subtotal</span>
+          <span>Rp{subtotal.toLocaleString("id-ID")}</span>
+        </div>
 
-      </div>
+        {discountAmount > 0 && (
 
-      {/* Metode Pembayaran */}
+          <div className="flex justify-between text-gray-600">
+            <span>Diskon ({discountPercent}%)</span>
+            <span className="text-red-500">
+              -Rp{discountAmount.toLocaleString("id-ID")}
+            </span>
+          </div>
 
-      <div className="mt-5">
+        )}
 
-        <label className="font-semibold">
-          Metode Pembayaran
-        </label>
+        {taxAmount > 0 && (
 
-        <select
-          value={paymentMethod}
-          onChange={(e) =>
-            setPaymentMethod(e.target.value)
-          }
-          className="w-full mt-2 border rounded-xl p-3"
-        >
+          <div className="flex justify-between text-gray-600">
+            <span>Pajak ({taxPercent}%)</span>
+            <span>Rp{taxAmount.toLocaleString("id-ID")}</span>
+          </div>
 
-          <option>Tunai</option>
-          <option>QRIS</option>
-          <option>Debit</option>
-          <option>Transfer</option>
+        )}
 
-        </select>
+        <div className="flex justify-between text-xl font-bold pt-2 border-t">
+          <span>Total</span>
+          <span>Rp{total.toLocaleString("id-ID")}</span>
+        </div>
 
       </div>
 
@@ -167,19 +188,38 @@ useState({
 
       <PaymentModal
         open={openPayment}
+        subtotal={subtotal}
+        discountAmount={discountAmount}
+        taxAmount={taxAmount}
         total={total}
         onClose={() => setOpenPayment(false)}
-        onPay={() => {
+        onPay={(paymentInfo) => {
+
+          const cartSnapshot = [...cart];
+
+          const transaction = clearCart({
+            paymentMethod: paymentInfo.paymentMethod,
+            paid: paymentInfo.paid,
+            change: paymentInfo.change,
+            discount: discountPercent,
+            discountAmount,
+            tax: taxPercent,
+            taxAmount,
+            total,
+          });
 
           setInvoiceData({
             invoice:
-              `INV-${Date.now()}`,
-            cart: [...cart],
+              transaction?.invoice || `INV-${Date.now()}`,
+            cart: cartSnapshot,
+            subtotal,
+            discountAmount,
+            taxAmount,
             total,
-            paymentMethod,
+            paymentMethod: paymentInfo.paymentMethod,
+            paid: paymentInfo.paid,
+            change: paymentInfo.change,
           });
-
-          clearCart(paymentMethod);
 
           setOpenPayment(false);
 
@@ -191,8 +231,13 @@ useState({
       <InvoiceModal
         open={openInvoice}
         cart={invoiceData.cart}
+        subtotal={invoiceData.subtotal}
+        discountAmount={invoiceData.discountAmount}
+        taxAmount={invoiceData.taxAmount}
         total={invoiceData.total}
         paymentMethod={invoiceData.paymentMethod}
+        paid={invoiceData.paid}
+        change={invoiceData.change}
         invoice={invoiceData.invoice}
         onClose={() => setOpenInvoice(false)}
       />

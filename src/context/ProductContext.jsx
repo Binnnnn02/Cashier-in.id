@@ -213,7 +213,7 @@ const removeCart = (id) => {
 
 };
 
-const clearCart = (paymentMethod = "Tunai") => {
+const clearCart = (paymentInfo = {}) => {
 
   if (cart.length === 0) return;
 
@@ -232,11 +232,22 @@ const clearCart = (paymentMethod = "Tunai") => {
   const invoice =
     `INV-${dateCode}-${Date.now()}`;
 
-  const total = cart.reduce(
+  const subtotal = cart.reduce(
     (sum, item) =>
       sum + item.price * item.qty,
     0
   );
+
+  const {
+    paymentMethod = "Tunai",
+    paid = subtotal,
+    change = 0,
+    discount = 0,
+    discountAmount = 0,
+    tax = 0,
+    taxAmount = 0,
+    total = subtotal,
+  } = paymentInfo;
 
   const transaction = {
 
@@ -258,9 +269,16 @@ const clearCart = (paymentMethod = "Tunai") => {
 
     items: [...cart],
 
+    subtotal,
+    discount,
+    discountAmount,
+    tax,
+    taxAmount,
     total,
 
     paymentMethod,
+    paid,
+    change,
 
     date: today.toLocaleString("id-ID"),
 
@@ -279,6 +297,8 @@ const clearCart = (paymentMethod = "Tunai") => {
   setCart([]);
 
   toast.success("Pembayaran berhasil");
+
+  return transaction;
 
 };
 
