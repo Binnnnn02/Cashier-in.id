@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Search,
   Plus,
@@ -15,11 +16,24 @@ export default function Product() {
 
   const { products, setProducts } = useProducts();
 
+  const [searchParams] = useSearchParams();
+
   const [isModalOpen, setIsModalOpen] =
     useState(false);
 
   const [search, setSearch] =
-    useState("");
+    useState(searchParams.get("search") || "");
+
+  // Sinkron kalau ada ?search= baru dari Header (mis. klik notifikasi stok)
+  useEffect(() => {
+
+    const keyword = searchParams.get("search");
+
+    if (keyword !== null) {
+      setSearch(keyword);
+    }
+
+  }, [searchParams]);
 
   const [categoryFilter, setCategoryFilter] =
     useState("Semua");

@@ -1,7 +1,14 @@
 import {
+  useState,
+  useRef,
+  useEffect,
+} from "react";
+
+import {
   Search,
   Bell,
   UserCircle,
+  PackageX,
 } from "lucide-react";
 
 import {
@@ -11,6 +18,7 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 import { useStore } from "../../context/StoreContext";
+import { useProducts } from "../../context/ProductContext";
 
 const pageTitles = {
   "/": "Dashboard",
@@ -30,6 +38,42 @@ export default function Header() {
   const { admin } = useAuth();
 
   const { store } = useStore();
+
+  const { products } = useProducts();
+
+  const [showNotif, setShowNotif] = useState(false);
+
+  const notifRef = useRef(null);
+
+  // Notifikasi stok mengikuti toggle di halaman Settings
+  const stockNotifEnabled = JSON.parse(
+    localStorage.getItem("stockNotif") ?? "true"
+  );
+
+  const lowStockProducts = products.filter(
+    (product) => Number(product.stock) <= 5
+  );
+
+  // Tutup dropdown saat klik di luar area notifikasi
+  useEffect(() => {
+
+    const handleClickOutside = (e) => {
+
+      if (
+        notifRef.current &&
+        !notifRef.current.contains(e.target)
+      ) {
+        setShowNotif(false);
+      }
+
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+
+  }, []);
 
   const today = new Date().toLocaleDateString(
     "id-ID",
@@ -66,6 +110,18 @@ export default function Header() {
       );
 
     }
+
+  };
+
+  const goToProduct = (productName) => {
+
+    setShowNotif(false);
+
+    navigate(
+      `/products?search=${encodeURIComponent(
+        productName
+      )}`
+    );
 
   };
 
@@ -180,22 +236,160 @@ export default function Header() {
 
         {/* Notifikasi */}
 
-        <button
-          className="
-            shrink-0
-            p-2.5
-            sm:p-3
-            rounded-xl
-            bg-gray-100
-            hover:bg-gray-200
-            transition
-          "
-          aria-label="Notifikasi"
+        <div
+          className="relative shrink-0"
+          ref={notifRef}
         >
 
-          <Bell size={20} />
+          <button
+            onClick={() =>
+              setShowNotif((prev) => !prev)
+            }
+            className="
+              relative
+              p-2.5
+              sm:p-3
+              rounded-xl
+              bg-gray-100
+              hover:bg-gray-200
+              transition
+            "
+            aria-label="Notifikasi"
+          >
 
-        </button>
+            <Bell size={20} />
+
+            {stockNotifEnabled && lowStockProducts.length > 0 && (
+
+              <span
+                className="
+                  absolute
+                  -top-1
+                  -right-1
+                  bg-red-600
+                  text-white
+                  text-[10px]
+                  font-bold
+                  rounded-full
+                  w-5
+                  h-5
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                {lowStockProducts.length > 9
+                  ? "9+"
+                  : lowStockProducts.length}
+              </span>
+
+            )}
+
+          </button>
+
+          {showNotif && (
+
+            <div
+              className="
+                absolute
+                right-0
+                mt-2
+                w-80
+                max-w-[90vw]
+                bg-white
+                rounded-xl
+                shadow-lg
+                border
+                border-gray-100
+                z-50
+                max-h-96
+                overflow-y-auto
+              "
+            >
+
+              <div className="p-4 border-b">
+                <h3 className="font-semibold">
+                  Notifikasi Stok
+                </h3>
+              </div>
+
+              {!stockNotifEnabled ? (
+
+                <p className="p-4 text-sm text-gray-500">
+                  Notifikasi stok dinonaktifkan. Aktifkan di halaman Pengaturan.
+                </p>
+
+              ) : lowStockProducts.length === 0 ? (
+
+                <p className="p-4 text-sm text-gray-500">
+                  Semua stok produk masih aman.
+                </p>
+
+              ) : (
+
+                <div className="divide-y">
+
+                  {lowStockProducts.map((product) => (
+
+                    <button
+                      key={product.id}
+                      onClick={() =>
+                        goToProduct(product.name)
+                      }
+                      className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        p-4
+                        hover:bg-gray-50
+                        text-left
+                        transition
+                      "
+                    >
+
+                      <div
+                        className={`
+                          p-2
+                          rounded-lg
+                          shrink-0
+                          ${
+                            Number(product.stock) === 0
+                              ? "bg-red-100 text-red-600"
+                              : "bg-yellow-100 text-yellow-700"
+                          }
+                        `}
+                      >
+                        <PackageX size={18} />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+
+                        <p className="font-medium truncate">
+                          {product.name}
+                        </p>
+
+                        <p className="text-sm text-gray-500">
+                          {Number(product.stock) === 0
+                            ? "Stok habis"
+                            : `Sisa ${product.stock} pcs`}
+                        </p>
+
+                      </div>
+
+                    </button>
+
+                  ))}
+
+                </div>
+
+              )}
+
+            </div>
+
+          )}
+
+        </div>
 
 
         {/* User */}
