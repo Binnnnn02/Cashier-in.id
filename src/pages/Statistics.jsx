@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { useProducts } from "../context/ProductContext";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { FileDown, FileSpreadsheet } from "lucide-react";
 
 import {
   ResponsiveContainer,
@@ -153,6 +158,118 @@ export default function Statistics() {
       }));
 
 
+  const periodLabel =
+    {
+      all: "Semua Waktu",
+      today: "Hari Ini",
+      "7": "7 Hari Terakhir",
+      "30": "30 Hari Terakhir",
+    }[filter] || "Semua Waktu";
+
+
+  /* =========================
+     EXPORT PDF & EXCEL
+  ========================= */
+
+  const downloadPDF = () => {
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Laporan Statistik Penjualan", 14, 18);
+
+    doc.setFontSize(11);
+    doc.text(`Periode : ${periodLabel}`, 14, 26);
+    doc.text(
+      `Tanggal Cetak : ${new Date().toLocaleString("id-ID")}`,
+      14,
+      32
+    );
+
+    autoTable(doc, {
+
+      startY: 40,
+
+      head: [["Ringkasan", "Nilai"]],
+
+      body: [
+        ["Pendapatan", `Rp${totalIncome.toLocaleString("id-ID")}`],
+        ["Total Transaksi", `${totalTransaction}`],
+        ["Produk Terjual", `${totalItemSold} pcs`],
+        ["Rata-rata / Transaksi", `Rp${Math.round(averageTransaction).toLocaleString("id-ID")}`],
+        ["Produk Terlaris", bestSeller ? `${bestSeller[0]} (${bestSeller[1]} pcs)` : "-"],
+      ],
+
+      styles: { fontSize: 10 },
+
+      headStyles: { fillColor: [5, 150, 105] },
+
+    });
+
+    autoTable(doc, {
+
+      startY: doc.lastAutoTable.finalY + 10,
+
+      head: [["Produk", "Jumlah Terjual"]],
+
+      body: sortedProducts.map(([name, qty]) => [
+        name,
+        `${qty} pcs`,
+      ]),
+
+      styles: { fontSize: 9 },
+
+      headStyles: { fillColor: [5, 150, 105] },
+
+    });
+
+    doc.save("Laporan-Statistik.pdf");
+
+  };
+
+  const downloadExcel = () => {
+
+    const summarySheet = XLSX.utils.json_to_sheet([
+      { Ringkasan: "Periode", Nilai: periodLabel },
+      { Ringkasan: "Pendapatan", Nilai: totalIncome },
+      { Ringkasan: "Total Transaksi", Nilai: totalTransaction },
+      { Ringkasan: "Produk Terjual", Nilai: totalItemSold },
+      { Ringkasan: "Rata-rata / Transaksi", Nilai: Math.round(averageTransaction) },
+      { Ringkasan: "Produk Terlaris", Nilai: bestSeller ? `${bestSeller[0]} (${bestSeller[1]} pcs)` : "-" },
+    ]);
+
+    const productSheet = XLSX.utils.json_to_sheet(
+
+      sortedProducts.map(([name, qty]) => ({
+        "Produk": name,
+        "Jumlah Terjual": qty,
+      }))
+
+    );
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "Ringkasan");
+    XLSX.utils.book_append_sheet(workbook, productSheet, "Produk Terlaris");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const file = new Blob(
+      [excelBuffer],
+      {
+        type:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }
+    );
+
+    saveAs(file, "Laporan-Statistik.xlsx");
+
+  };
+
+
   const filters = [
     {
       value: "all",
@@ -183,13 +300,41 @@ export default function Statistics() {
 
       <div>
 
-        <h1 className="text-2xl sm:text-3xl font-bold">
-          Statistik
-        </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
-        <p className="text-sm sm:text-base text-gray-500 mt-1">
-          Ringkasan seluruh penjualan.
-        </p>
+          <div>
+
+            <h1 className="text-2xl sm:text-3xl font-bold">
+              Statistik
+            </h1>
+
+            <p className="text-sm sm:text-base text-gray-500 mt-1">
+              Ringkasan seluruh penjualan.
+            </p>
+
+          </div>
+
+          <div className="flex gap-3">
+
+            <button
+              onClick={downloadPDF}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl"
+            >
+              <FileDown size={18} />
+              Export PDF
+            </button>
+
+            <button
+              onClick={downloadExcel}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
+            >
+              <FileSpreadsheet size={18} />
+              Export Excel
+            </button>
+
+          </div>
+
+        </div>
 
 
         {/* FILTER */}

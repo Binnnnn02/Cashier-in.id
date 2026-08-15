@@ -6,7 +6,13 @@ import {
   Pencil,
   Trash2,
   Package,
+  FileDown,
+  FileSpreadsheet,
 } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 import ProductModal from "../components/product/ProductModal";
 import DeleteModal from "../components/product/DeleteModal";
@@ -188,6 +194,109 @@ export default function Product() {
   };
 
 
+  /* =========================
+     STOCK STATUS
+  ========================= */
+
+  const getStockStatus = (stock) => {
+
+    if (Number(stock) === 0) return "Habis";
+
+    if (Number(stock) <= 5) return "Menipis";
+
+    return "Aman";
+
+  };
+
+
+  /* =========================
+     EXPORT PDF & EXCEL
+  ========================= */
+
+  const downloadPDF = () => {
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Daftar Produk & Stok", 14, 18);
+
+    doc.setFontSize(11);
+    doc.text(
+      `Tanggal Cetak : ${new Date().toLocaleString("id-ID")}`,
+      14,
+      26
+    );
+
+    autoTable(doc, {
+
+      startY: 34,
+
+      head: [[
+        "Nama Produk",
+        "Kategori",
+        "Harga",
+        "Stok",
+        "Status",
+      ]],
+
+      body: sortedProducts.map((product) => [
+        product.name,
+        product.category || "-",
+        `Rp${Number(product.price).toLocaleString("id-ID")}`,
+        `${product.stock} pcs`,
+        getStockStatus(product.stock),
+      ]),
+
+      styles: { fontSize: 9 },
+
+      headStyles: { fillColor: [5, 150, 105] },
+
+    });
+
+    doc.save("Daftar-Produk.pdf");
+
+  };
+
+  const downloadExcel = () => {
+
+    const data = sortedProducts.map((product) => ({
+
+      "Nama Produk": product.name,
+      "Kategori": product.category || "-",
+      "Harga": product.price,
+      "Stok": product.stock,
+      "Status": getStockStatus(product.stock),
+
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Produk"
+    );
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const file = new Blob(
+      [excelBuffer],
+      {
+        type:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }
+    );
+
+    saveAs(file, "Daftar-Produk.xlsx");
+
+  };
+
+
   return (
 
     <div className="space-y-6">
@@ -221,32 +330,86 @@ export default function Product() {
         </div>
 
 
-        <button
-          onClick={() =>
-            setIsModalOpen(true)
-          }
-          className="
-            w-full
-            sm:w-auto
-            justify-center
-            bg-emerald-600
-            hover:bg-emerald-700
-            text-white
-            px-5
-            py-3
-            rounded-xl
-            flex
-            items-center
-            gap-2
-            transition
-          "
-        >
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
 
-          <Plus size={20} />
+          <button
+            onClick={downloadPDF}
+            className="
+              w-full
+              sm:w-auto
+              justify-center
+              bg-red-600
+              hover:bg-red-700
+              text-white
+              px-5
+              py-3
+              rounded-xl
+              flex
+              items-center
+              gap-2
+              transition
+            "
+          >
 
-          Tambah Produk
+            <FileDown size={18} />
 
-        </button>
+            Export PDF
+
+          </button>
+
+          <button
+            onClick={downloadExcel}
+            className="
+              w-full
+              sm:w-auto
+              justify-center
+              bg-green-600
+              hover:bg-green-700
+              text-white
+              px-5
+              py-3
+              rounded-xl
+              flex
+              items-center
+              gap-2
+              transition
+            "
+          >
+
+            <FileSpreadsheet size={18} />
+
+            Export Excel
+
+          </button>
+
+          <button
+            onClick={() =>
+              setIsModalOpen(true)
+            }
+            className="
+              w-full
+              sm:w-auto
+              justify-center
+              bg-emerald-600
+              hover:bg-emerald-700
+              text-white
+              px-5
+              py-3
+              rounded-xl
+              flex
+              items-center
+              gap-2
+              transition
+            "
+          >
+
+            <Plus size={20} />
+
+            Tambah Produk
+
+          </button>
+
+        </div>
 
       </div>
 
