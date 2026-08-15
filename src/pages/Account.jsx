@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { useStore } from "../context/StoreContext";
 import { useAuth } from "../context/AuthContext";
+
+import EditProfileModal from "../components/account/EditProfileModal";
+import ChangePasswordModal from "../components/account/ChangePasswordModal";
 
 import {
   User,
@@ -25,7 +29,16 @@ export default function Account() {
 
   const { store } = useStore();
 
-  const { admin, setAdmin } = useAuth();
+  const {
+    admin,
+    setAdmin,
+    account,
+    updateAccount,
+  } = useAuth();
+
+  const [openEditProfile, setOpenEditProfile] = useState(false);
+
+  const [openChangePassword, setOpenChangePassword] = useState(false);
 
   const logout = () => {
 
@@ -323,7 +336,10 @@ export default function Account() {
 
         <div className="flex flex-wrap gap-4">
 
-          <button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl">
+          <button
+            onClick={() => setOpenEditProfile(true)}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl"
+          >
 
             <Pencil size={18} />
 
@@ -331,7 +347,10 @@ export default function Account() {
 
           </button>
 
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl">
+          <button
+            onClick={() => setOpenChangePassword(true)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
+          >
 
             <Lock size={18} />
 
@@ -353,6 +372,36 @@ export default function Account() {
         </div>
 
       </div>
+
+      <EditProfileModal
+        open={openEditProfile}
+        account={account}
+        onClose={() => setOpenEditProfile(false)}
+        onSave={({ email }) => {
+
+          updateAccount({ email });
+
+          setAdmin((prev) =>
+            prev ? { ...prev, email } : prev
+          );
+
+          toast.success("Profil berhasil diperbarui");
+
+        }}
+      />
+
+      <ChangePasswordModal
+        open={openChangePassword}
+        account={account}
+        onClose={() => setOpenChangePassword(false)}
+        onSave={(newPassword) => {
+
+          updateAccount({ password: newPassword });
+
+          toast.success("Password berhasil diubah");
+
+        }}
+      />
 
     </div>
 

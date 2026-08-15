@@ -239,6 +239,9 @@ useState({
         paid={invoiceData.paid}
         change={invoiceData.change}
         invoice={invoiceData.invoice}
+        autoPrint={JSON.parse(
+          localStorage.getItem("autoPrint") ?? "false"
+        )}
         onClose={() => setOpenInvoice(false)}
       />
 

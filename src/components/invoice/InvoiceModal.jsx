@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -13,9 +14,8 @@ export default function InvoiceModal({
   paid = 0,
   change = 0,
   invoice,
+  autoPrint = false,
 }) {
-
-  if (!open) return null;
 
   const store =
     JSON.parse(localStorage.getItem("store")) || {};
@@ -198,6 +198,18 @@ export default function InvoiceModal({
     doc.save(`${invoice || `Invoice-${Date.now()}`}.pdf`);
 
   };
+
+  // Cetak/unduh otomatis setelah pembayaran, sesuai toggle "Print otomatis" di Settings
+  useEffect(() => {
+
+    if (open && autoPrint) {
+      downloadPDF();
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, autoPrint]);
+
+  if (!open) return null;
 
   return (
 

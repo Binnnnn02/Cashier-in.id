@@ -24,7 +24,9 @@ export default function PaymentModal({
   useEffect(() => {
     if (open) {
       setMoney("");
-      setPaymentMethod("Tunai");
+      setPaymentMethod(
+        localStorage.getItem("paymentMethod") || "Tunai"
+      );
     }
   }, [open]);
 
