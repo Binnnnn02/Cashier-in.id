@@ -630,7 +630,7 @@ export default function Settings() {
           </p>
 
           <p>
-            <strong>Developer :</strong> Berjuta Cerita
+            <strong>Developer :</strong> Bibinn
           </p>
 
           <p>
