@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useStore } from "../../context/StoreContext";
 
 export default function InvoiceModal({
   open,
@@ -17,21 +18,14 @@ export default function InvoiceModal({
   autoPrint = false,
 }) {
 
-  const store =
-    JSON.parse(localStorage.getItem("store")) || {};
+  const { store } = useStore();
 
-  // Toggle tampilan struk mengikuti pengaturan di halaman Settings
-  const showAddress = JSON.parse(
-    localStorage.getItem("showAddress") ?? "true"
-  );
+  // Toggle tampilan struk mengikuti pengaturan toko (Supabase)
+  const showAddress = store.showAddress;
 
-  const showPhone = JSON.parse(
-    localStorage.getItem("showPhone") ?? "true"
-  );
+  const showPhone = store.showPhone;
 
-  const showTax = JSON.parse(
-    localStorage.getItem("showTax") ?? "false"
-  );
+  const showTax = store.showTax;
 
   const isCash = paymentMethod === "Tunai";
 

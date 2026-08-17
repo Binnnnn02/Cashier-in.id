@@ -11,11 +11,29 @@ import Settings from "./pages/Settings";
 import Account from "./pages/Account";
 import History from "./pages/History";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
 
-  const { admin } = useAuth();
+  const { admin, authLoading } = useAuth();
+
+  // Masih mengecek sesi login (auto-login) saat app pertama dibuka
+  if (authLoading) {
+
+    return (
+
+      <div className="min-h-screen flex items-center justify-center bg-emerald-50">
+
+        <p className="text-emerald-700 font-medium">
+          Memuat...
+        </p>
+
+      </div>
+
+    );
+
+  }
 
   return (
 
@@ -29,6 +47,17 @@ export default function App() {
           admin
             ? <Navigate to="/" replace />
             : <Login />
+        }
+      />
+
+      {/* Register */}
+
+      <Route
+        path="/register"
+        element={
+          admin
+            ? <Navigate to="/" replace />
+            : <Register />
         }
       />
 

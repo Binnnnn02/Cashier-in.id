@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 
 export default function ChangePasswordModal({
   open,
-  account,
   onClose,
   onSave,
 }) {
@@ -12,6 +11,7 @@ export default function ChangePasswordModal({
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
 
@@ -19,20 +19,16 @@ export default function ChangePasswordModal({
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setLoading(false);
     }
 
   }, [open]);
 
   if (!open) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
 
     e.preventDefault();
-
-    if (currentPassword !== account?.password) {
-      toast.error("Password saat ini salah");
-      return;
-    }
 
     if (newPassword.length < 6) {
       toast.error("Password baru minimal 6 karakter");
@@ -44,9 +40,17 @@ export default function ChangePasswordModal({
       return;
     }
 
-    onSave(newPassword);
+    setLoading(true);
 
-    onClose();
+    // Verifikasi & penggantian password sepenuhnya ditangani Supabase Auth
+    // lewat fungsi onSave (parent), termasuk pengecekan password lama.
+    const success = await onSave(currentPassword, newPassword);
+
+    setLoading(false);
+
+    if (success) {
+      onClose();
+    }
 
   };
 
@@ -135,9 +139,10 @@ export default function ChangePasswordModal({
 
           <button
             type="submit"
-            className="px-5 py-2 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 transition"
+            disabled={loading}
+            className="px-5 py-2 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 transition disabled:opacity-60"
           >
-            Simpan
+            {loading ? "Memproses..." : "Simpan"}
           </button>
 
         </div>

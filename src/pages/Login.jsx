@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import {
+  Navigate,
+  useNavigate,
+  Link,
+} from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../context/AuthContext";
@@ -8,14 +12,13 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  const {
-    admin,
-    login,
-  } = useAuth();
+  const { admin, login } = useAuth();
 
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   if (admin) {
 
@@ -23,28 +26,29 @@ export default function Login() {
 
   }
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
 
     e.preventDefault();
 
-    const result = login(
-      email,
-      password
-    );
+    setLoading(true);
+
+    const result = await login(email, password);
+
+    setLoading(false);
 
     if (result.success) {
 
       toast.success("Login berhasil");
 
-      navigate("/", {
-        replace: true,
-      });
+      navigate("/", { replace: true });
 
       return;
 
     }
 
-    toast.error("Email atau password salah");
+    toast.error(
+      result.message || "Email atau password salah"
+    );
 
   };
 
@@ -59,13 +63,13 @@ export default function Login() {
 
         <h1 className="text-3xl font-bold text-center text-emerald-700">
 
-          KasirKu POS
+          Cashier-in
 
         </h1>
 
         <p className="text-center text-gray-500 mt-2 mb-8">
 
-          Login Administrator
+          Masuk ke akun toko Anda
 
         </p>
 
@@ -113,16 +117,30 @@ export default function Login() {
 
         <button
           type="submit"
-          className="w-full bg-emerald-600 hover:bg-emerald-700 transition text-white py-3 rounded-xl font-semibold"
+          disabled={loading}
+          className="w-full bg-emerald-600 hover:bg-emerald-700 transition text-white py-3 rounded-xl font-semibold disabled:opacity-60"
         >
 
-          Masuk
+          {loading ? "Memproses..." : "Masuk"}
 
         </button>
 
-        <div className="mt-6 text-center text-sm text-gray-500">
+        <p className="text-center text-sm text-gray-500 mt-6">
 
-          © 2026 Berjuta Cafe POS
+          Belum punya akun toko?{" "}
+
+          <Link
+            to="/register"
+            className="text-emerald-600 font-semibold hover:underline"
+          >
+            Daftar di sini
+          </Link>
+
+        </p>
+
+        <div className="mt-4 text-center text-sm text-gray-400">
+
+          © 2026 Cashier-in
 
         </div>
 

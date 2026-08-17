@@ -10,18 +10,20 @@ export default function EditProfileModal({
 }) {
 
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
 
     if (open) {
       setEmail(account?.email || "");
+      setLoading(false);
     }
 
   }, [open, account]);
 
   if (!open) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
 
     e.preventDefault();
 
@@ -39,9 +41,15 @@ export default function EditProfileModal({
       return;
     }
 
-    onSave({ email: trimmed });
+    setLoading(true);
 
-    onClose();
+    const success = await onSave({ email: trimmed });
+
+    setLoading(false);
+
+    if (success) {
+      onClose();
+    }
 
   };
 
@@ -94,9 +102,10 @@ export default function EditProfileModal({
 
           <button
             type="submit"
-            className="px-5 py-2 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 transition"
+            disabled={loading}
+            className="px-5 py-2 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 transition disabled:opacity-60"
           >
-            Simpan
+            {loading ? "Memproses..." : "Simpan"}
           </button>
 
         </div>

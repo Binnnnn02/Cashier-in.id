@@ -31,21 +31,21 @@ export default function Account() {
 
   const {
     admin,
-    setAdmin,
-    account,
-    updateAccount,
+    logout: authLogout,
+    updateEmail,
+    changePassword,
   } = useAuth();
 
   const [openEditProfile, setOpenEditProfile] = useState(false);
 
   const [openChangePassword, setOpenChangePassword] = useState(false);
 
-  const logout = () => {
+  const logout = async () => {
 
     if (!window.confirm("Yakin ingin logout?"))
       return;
 
-    setAdmin(null);
+    await authLogout();
 
     toast.success("Logout berhasil");
 
@@ -375,30 +375,55 @@ export default function Account() {
 
       <EditProfileModal
         open={openEditProfile}
-        account={account}
+        account={admin}
         onClose={() => setOpenEditProfile(false)}
-        onSave={({ email }) => {
+        onSave={async ({ email }) => {
 
-          updateAccount({ email });
+          const result = await updateEmail(email);
 
-          setAdmin((prev) =>
-            prev ? { ...prev, email } : prev
+          if (!result.success) {
+
+            toast.error(
+              result.message || "Gagal memperbarui profil"
+            );
+
+            return false;
+
+          }
+
+          toast.success(
+            "Permintaan ganti email dikirim. Cek inbox email lama & baru untuk konfirmasi.",
+            { duration: 6000 }
           );
 
-          toast.success("Profil berhasil diperbarui");
+          return true;
 
         }}
       />
 
       <ChangePasswordModal
         open={openChangePassword}
-        account={account}
         onClose={() => setOpenChangePassword(false)}
-        onSave={(newPassword) => {
+        onSave={async (currentPassword, newPassword) => {
 
-          updateAccount({ password: newPassword });
+          const result = await changePassword(
+            currentPassword,
+            newPassword
+          );
+
+          if (!result.success) {
+
+            toast.error(
+              result.message || "Gagal mengubah password"
+            );
+
+            return false;
+
+          }
 
           toast.success("Password berhasil diubah");
+
+          return true;
 
         }}
       />

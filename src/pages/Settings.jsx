@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useStore } from "../context/StoreContext";
+import { useProducts } from "../context/ProductContext";
 import {
   Store,
   Receipt,
@@ -8,7 +9,6 @@ import {
   Bell,
   Database,
   Info,
-  Upload,
   Download,
   RotateCcw,
   Save,
@@ -16,133 +16,108 @@ import {
 
 export default function Settings() {
 
-  const fileInput = useRef(null);
+  const { store, storeLoading, updateStore } = useStore();
 
-  const { store, setStore } = useStore();
+  const { products, history, resetAllData } = useProducts();
 
-  const [storeName, setStoreName] = useState(
-    store.name
-  );
+  const [storeName, setStoreName] = useState(store.name);
+  const [owner, setOwner] = useState(store.owner);
+  const [phone, setPhone] = useState(store.phone);
+  const [address, setAddress] = useState(store.address);
+  const [tax, setTax] = useState(store.tax);
+  const [discount, setDiscount] = useState(store.discount);
+  const [footer, setFooter] = useState(store.footer);
 
-  const [owner, setOwner] = useState(
-    store.owner
-  );
+  const [showLogo, setShowLogo] = useState(store.showLogo);
+  const [showAddress, setShowAddress] = useState(store.showAddress);
+  const [showPhone, setShowPhone] = useState(store.showPhone);
+  const [showTax, setShowTax] = useState(store.showTax);
 
-  const [phone, setPhone] = useState(
-    store.phone
-  );
-
-  const [address, setAddress] = useState(
-    store.address
-  );
-
-  const [tax, setTax] = useState(
-    localStorage.getItem("tax") || 0
-  );
-
-  const [discount, setDiscount] = useState(
-    localStorage.getItem("discount") || 0
-  );
-
-  const [footer, setFooter] = useState(
-    localStorage.getItem("footer") ||
-      store.footer
-  );
-
-  const [showLogo, setShowLogo] = useState(
-    JSON.parse(localStorage.getItem("showLogo") ?? "true")
-  );
-
-  const [showAddress, setShowAddress] = useState(
-    JSON.parse(localStorage.getItem("showAddress") ?? "true")
-  );
-
-  const [showPhone, setShowPhone] = useState(
-    JSON.parse(localStorage.getItem("showPhone") ?? "true")
-  );
-
-  const [showTax, setShowTax] = useState(
-    JSON.parse(localStorage.getItem("showTax") ?? "false")
-  );
-
-  const [stockNotif, setStockNotif] = useState(
-    JSON.parse(localStorage.getItem("stockNotif") ?? "true")
-  );
-
-  const [soundNotif, setSoundNotif] = useState(
-    JSON.parse(localStorage.getItem("soundNotif") ?? "true")
-  );
-
-  const [autoPrint, setAutoPrint] = useState(
-    JSON.parse(localStorage.getItem("autoPrint") ?? "false")
-  );
+  const [stockNotif, setStockNotif] = useState(store.stockNotif);
+  const [soundNotif, setSoundNotif] = useState(store.soundNotif);
+  const [autoPrint, setAutoPrint] = useState(store.autoPrint);
 
   const [paymentMethod, setPaymentMethod] = useState(
-    localStorage.getItem("paymentMethod") || "Tunai"
+    store.defaultPaymentMethod
   );
 
-  const saveSettings = () => {
-    setStore({
-  ...store,
-  name: storeName,
-  owner,
-  email: store.email,
-  phone,
-  address,
-  footer,
-});
+  const [saving, setSaving] = useState(false);
 
-    localStorage.setItem("tax", tax);
-    localStorage.setItem("discount", discount);
-    localStorage.setItem("footer", footer);
+  // Begitu data profil toko selesai dimuat dari Supabase, isi form dengan nilainya
+  useEffect(() => {
 
-    localStorage.setItem(
-      "showLogo",
-      JSON.stringify(showLogo)
-    );
+    if (storeLoading) return;
 
-    localStorage.setItem(
-      "showAddress",
-      JSON.stringify(showAddress)
-    );
+    setStoreName(store.name);
+    setOwner(store.owner);
+    setPhone(store.phone);
+    setAddress(store.address);
+    setTax(store.tax);
+    setDiscount(store.discount);
+    setFooter(store.footer);
+    setShowLogo(store.showLogo);
+    setShowAddress(store.showAddress);
+    setShowPhone(store.showPhone);
+    setShowTax(store.showTax);
+    setStockNotif(store.stockNotif);
+    setSoundNotif(store.soundNotif);
+    setAutoPrint(store.autoPrint);
+    setPaymentMethod(store.defaultPaymentMethod);
 
-    localStorage.setItem(
-      "showPhone",
-      JSON.stringify(showPhone)
-    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeLoading]);
 
-    localStorage.setItem(
-      "showTax",
-      JSON.stringify(showTax)
-    );
+  const saveSettings = async () => {
 
-    localStorage.setItem(
-      "stockNotif",
-      JSON.stringify(stockNotif)
-    );
+    setSaving(true);
 
-    localStorage.setItem(
-      "soundNotif",
-      JSON.stringify(soundNotif)
-    );
+    const result = await updateStore({
 
-    localStorage.setItem(
-      "autoPrint",
-      JSON.stringify(autoPrint)
-    );
+      name: storeName,
+      owner,
+      phone,
+      address,
+      footer,
 
-    localStorage.setItem(
-      "paymentMethod",
-      paymentMethod
-    );
+      tax: Number(tax) || 0,
+      discount: Number(discount) || 0,
+
+      showLogo,
+      showAddress,
+      showPhone,
+      showTax,
+
+      stockNotif,
+      soundNotif,
+      autoPrint,
+
+      defaultPaymentMethod: paymentMethod,
+
+    });
+
+    setSaving(false);
+
+    if (!result.success) {
+
+      toast.error(
+        result.message || "Gagal menyimpan pengaturan"
+      );
+
+      return;
+
+    }
 
     toast.success("Pengaturan berhasil disimpan");
+
   };
 
   const backupData = () => {
+
     const backup = {
-      products: JSON.parse(localStorage.getItem("products") || "[]"),
-      history: JSON.parse(localStorage.getItem("history") || "[]"),
+
+      products,
+      history,
+
       settings: {
         storeName,
         owner,
@@ -152,6 +127,7 @@ export default function Settings() {
         discount,
         footer,
       },
+
     };
 
     const blob = new Blob(
@@ -173,59 +149,52 @@ export default function Settings() {
 
     URL.revokeObjectURL(url);
 
-    toast.success("Backup berhasil");
+    toast.success("Backup berhasil diunduh");
+
   };
 
-  const restoreData = (e) => {
-    const file = e.target.files[0];
+  const [resetting, setResetting] = useState(false);
 
-    if (!file) return;
+  const resetAll = async () => {
 
-    const reader = new FileReader();
-
-    reader.onload = (event) => {
-      try {
-        const data = JSON.parse(event.target.result);
-
-        if (data.products)
-          localStorage.setItem(
-            "products",
-            JSON.stringify(data.products)
-          );
-
-        if (data.history)
-          localStorage.setItem(
-            "history",
-            JSON.stringify(data.history)
-          );
-
-        toast.success("Restore berhasil");
-
-        window.location.reload();
-      } catch {
-        toast.error("File tidak valid");
-      }
-    };
-
-    reader.readAsText(file);
-  };
-
-  const resetAll = () => {
     if (
       !window.confirm(
-        "Yakin ingin menghapus semua data?"
+        "Yakin ingin menghapus SEMUA produk & riwayat transaksi toko ini secara permanen? Tindakan ini tidak bisa dibatalkan."
       )
     )
       return;
 
-    localStorage.clear();
+    setResetting(true);
 
-    toast.success("Semua data berhasil dihapus");
+    const result = await resetAllData();
 
-    setTimeout(() => {
-      window.location.reload();
-    }, 800);
+    setResetting(false);
+
+    if (!result.success) {
+
+      toast.error(
+        result.message || "Gagal menghapus data"
+      );
+
+      return;
+
+    }
+
+    toast.success("Data produk & riwayat berhasil dihapus");
+
   };
+
+  if (storeLoading) {
+
+    return (
+
+      <div className="flex items-center justify-center py-20 text-gray-400">
+        Memuat pengaturan...
+      </div>
+
+    );
+
+  }
 
   return (
     <div className="space-y-6">
@@ -560,10 +529,16 @@ export default function Settings() {
           <Database className="text-emerald-600" />
 
           <h2 className="text-xl font-bold">
-            Backup & Restore
+            Backup & Reset
           </h2>
 
         </div>
+
+        <p className="text-sm text-gray-500 mb-4">
+          Data Produk & Riwayat Transaksi tersimpan aman di cloud (Supabase),
+          jadi tidak akan hilang walau ganti perangkat. Tombol Backup di bawah
+          ini hanya untuk mengunduh salinan cadangan berupa file JSON.
+        </p>
 
         <div className="flex flex-wrap gap-4">
 
@@ -572,34 +547,19 @@ export default function Settings() {
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
           >
             <Download size={18} />
-            Backup Data
-          </button>
-
-          <button
-            onClick={() =>
-              fileInput.current.click()
-            }
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl"
-          >
-            <Upload size={18} />
-            Restore Data
+            Backup Data (JSON)
           </button>
 
           <button
             onClick={resetAll}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl"
+            disabled={resetting}
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl disabled:opacity-60"
           >
             <RotateCcw size={18} />
-            Reset Semua Data
+            {resetting
+              ? "Menghapus..."
+              : "Reset Data Produk & Riwayat"}
           </button>
-
-          <input
-            ref={fileInput}
-            type="file"
-            accept=".json"
-            hidden
-            onChange={restoreData}
-          />
 
         </div>
 
@@ -622,7 +582,7 @@ export default function Settings() {
         <div className="space-y-2 text-gray-600">
 
           <p>
-            <strong>Aplikasi :</strong> KasirKu POS
+            <strong>Aplikasi :</strong> Cashier-in POS
           </p>
 
           <p>
@@ -647,10 +607,11 @@ export default function Settings() {
 
         <button
           onClick={saveSettings}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl"
+          disabled={saving}
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl disabled:opacity-60"
         >
           <Save size={18} />
-          Simpan Pengaturan
+          {saving ? "Menyimpan..." : "Simpan Pengaturan"}
         </button>
 
       </div>

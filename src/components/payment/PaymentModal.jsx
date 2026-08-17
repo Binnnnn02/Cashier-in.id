@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { useStore } from "../../context/StoreContext";
 
 const paymentMethods = [
   "Tunai",
@@ -18,16 +19,17 @@ export default function PaymentModal({
   onClose,
   onPay,
 }) {
+  const { store } = useStore();
+
   const [money, setMoney] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Tunai");
 
   useEffect(() => {
     if (open) {
       setMoney("");
-      setPaymentMethod(
-        localStorage.getItem("paymentMethod") || "Tunai"
-      );
+      setPaymentMethod(store.defaultPaymentMethod || "Tunai");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;

@@ -45,10 +45,8 @@ export default function Header() {
 
   const notifRef = useRef(null);
 
-  // Notifikasi stok mengikuti toggle di halaman Settings
-  const stockNotifEnabled = JSON.parse(
-    localStorage.getItem("stockNotif") ?? "true"
-  );
+  // Notifikasi stok mengikuti pengaturan toko (Supabase)
+  const stockNotifEnabled = store.stockNotif;
 
   const lowStockProducts = products.filter(
     (product) => Number(product.stock) <= 5

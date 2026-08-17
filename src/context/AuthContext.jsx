@@ -5,122 +5,187 @@ import {
   useState,
 } from "react";
 
-const AuthContext = createContext();
+import { supabase } from "../lib/supabaseClient";
 
-const defaultAccount = {
-  email: "admin@berjuta.com",
-  password: "123456",
-  role: "Owner",
-};
+const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
 
-  // User yang sedang login
-  const [admin, setAdmin] = useState(() => {
+  // User yang sedang login (null = belum login)
+  const [admin, setAdmin] = useState(null);
 
-    const saved = localStorage.getItem("admin");
+  // Masih mengecek sesi login saat pertama kali app dibuka
+  const [authLoading, setAuthLoading] = useState(true);
 
-    return saved
-      ? JSON.parse(saved)
-      : null;
-
-  });
-
-  // Data akun login
-  const [account, setAccount] = useState(() => {
-
-    const saved = localStorage.getItem("adminAccount");
-
-    if (saved) {
-
-      return JSON.parse(saved);
-
-    }
-
-    localStorage.setItem(
-      "adminAccount",
-      JSON.stringify(defaultAccount)
-    );
-
-    return defaultAccount;
-
-  });
-
-  // Simpan akun
   useEffect(() => {
 
-    localStorage.setItem(
-      "adminAccount",
-      JSON.stringify(account)
-    );
+    // Cek sesi yang sudah tersimpan (auto-login)
+    supabase.auth.getSession().then(({ data }) => {
 
-  }, [account]);
+      const user = data.session?.user;
 
-  // Simpan sesi login
-  useEffect(() => {
-
-    if (admin) {
-
-      localStorage.setItem(
-        "admin",
-        JSON.stringify(admin)
+      setAdmin(
+        user
+          ? { id: user.id, email: user.email }
+          : null
       );
 
-    } else {
+      setAuthLoading(false);
 
-      localStorage.removeItem("admin");
+    });
+
+    // Dengarkan perubahan sesi (login, logout, token refresh, dari tab lain, dll)
+    const { data: listener } =
+      supabase.auth.onAuthStateChange((_event, session) => {
+
+        const user = session?.user;
+
+        setAdmin(
+          user
+            ? { id: user.id, email: user.email }
+            : null
+        );
+
+        setAuthLoading(false);
+
+      });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+
+  }, []);
+
+  // Login
+  const login = async (email, password) => {
+
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+    if (error) {
+
+      return {
+        success: false,
+        message: error.message,
+      };
 
     }
 
-  }, [admin]);
+    setAdmin({
+      id: data.user.id,
+      email: data.user.email,
+    });
 
-  // Login
-  const login = (email, password) => {
+    return { success: true };
 
-    if (
+  };
 
-      email === account.email &&
-      password === account.password
+  // Daftar toko baru
+  const register = async (email, password, storeName) => {
 
-    ) {
+    const { data, error } =
+      await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { store_name: storeName },
+        },
+      });
 
-      const user = {
-
-        email: account.email,
-        role: account.role,
-
-      };
-
-      setAdmin(user);
+    if (error) {
 
       return {
-        success: true,
+        success: false,
+        message: error.message,
       };
 
     }
 
     return {
-      success: false,
+      success: true,
+      needsEmailConfirm: !data.session,
     };
 
   };
 
   // Logout
-  const logout = () => {
+  const logout = async () => {
+
+    await supabase.auth.signOut();
 
     setAdmin(null);
 
   };
 
-  // Update akun
-  const updateAccount = (data) => {
+  // Ganti email login
+  const updateEmail = async (newEmail) => {
 
-    setAccount((prev) => ({
+    const { error } =
+      await supabase.auth.updateUser({
+        email: newEmail,
+      });
 
-      ...prev,
-      ...data,
+    if (error) {
 
-    }));
+      return {
+        success: false,
+        message: error.message,
+      };
+
+    }
+
+    return { success: true };
+
+  };
+
+  // Ganti password (verifikasi password lama dulu sebelum mengganti)
+  const changePassword = async (
+    currentPassword,
+    newPassword
+  ) => {
+
+    if (!admin?.email) {
+
+      return {
+        success: false,
+        message: "Sesi tidak ditemukan, silakan login ulang",
+      };
+
+    }
+
+    const { error: verifyError } =
+      await supabase.auth.signInWithPassword({
+        email: admin.email,
+        password: currentPassword,
+      });
+
+    if (verifyError) {
+
+      return {
+        success: false,
+        message: "Password saat ini salah",
+      };
+
+    }
+
+    const { error: updateError } =
+      await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+    if (updateError) {
+
+      return {
+        success: false,
+        message: updateError.message,
+      };
+
+    }
+
+    return { success: true };
 
   };
 
@@ -130,15 +195,14 @@ export function AuthProvider({ children }) {
       value={{
 
         admin,
-        account,
+        authLoading,
 
         login,
+        register,
         logout,
 
-        setAdmin,
-        setAccount,
-
-        updateAccount,
+        updateEmail,
+        changePassword,
 
       }}
     >

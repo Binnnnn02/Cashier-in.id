@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useProducts } from "../../context/ProductContext";
+import { useStore } from "../../context/StoreContext";
 import PaymentModal from "../payment/PaymentModal";
 import InvoiceModal from "../invoice/InvoiceModal";
 
@@ -12,6 +13,8 @@ export default function Cart() {
     removeCart,
     clearCart,
   } = useProducts();
+
+  const { store } = useStore();
 
   const [openPayment, setOpenPayment] = useState(false);
 
@@ -42,12 +45,10 @@ useState({
     0
   );
 
-  // Diskon & pajak mengikuti pengaturan di halaman Settings
-  const discountPercent =
-    Number(localStorage.getItem("discount")) || 0;
+  // Diskon & pajak mengikuti pengaturan toko (Supabase)
+  const discountPercent = store.discount;
 
-  const taxPercent =
-    Number(localStorage.getItem("tax")) || 0;
+  const taxPercent = store.tax;
 
   const discountAmount =
     Math.round(subtotal * (discountPercent / 100));
@@ -239,9 +240,7 @@ useState({
         paid={invoiceData.paid}
         change={invoiceData.change}
         invoice={invoiceData.invoice}
-        autoPrint={JSON.parse(
-          localStorage.getItem("autoPrint") ?? "false"
-        )}
+        autoPrint={store.autoPrint}
         onClose={() => setOpenInvoice(false)}
       />
 

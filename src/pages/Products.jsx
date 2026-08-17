@@ -20,7 +20,12 @@ import { useProducts } from "../context/ProductContext";
 
 export default function Product() {
 
-  const { products, setProducts } = useProducts();
+  const {
+    products,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+  } = useProducts();
 
   const [searchParams] = useSearchParams();
 
@@ -146,27 +151,15 @@ export default function Product() {
      ADD / EDIT PRODUCT
   ========================= */
 
-  const saveProduct = (newProduct) => {
+  const handleSaveProduct = async (productData) => {
 
-    if (newProduct.id) {
+    if (productData.id) {
 
-      setProducts(
-        products.map((product) =>
-          product.id === newProduct.id
-            ? newProduct
-            : product
-        )
-      );
+      await updateProduct(productData);
 
     } else {
 
-      setProducts([
-        ...products,
-        {
-          ...newProduct,
-          id: Date.now(),
-        },
-      ]);
+      await addProduct(productData);
 
     }
 
@@ -177,17 +170,12 @@ export default function Product() {
      DELETE PRODUCT
   ========================= */
 
-  const deleteProduct = () => {
+  const handleConfirmDelete = async () => {
 
     if (deleteProductId === null)
       return;
 
-    setProducts(
-      products.filter(
-        (product) =>
-          product.id !== deleteProductId
-      )
-    );
+    await deleteProduct(deleteProductId);
 
     setDeleteProductId(null);
 
@@ -609,7 +597,7 @@ export default function Product() {
         onClose={() =>
           setIsModalOpen(false)
         }
-        onSave={saveProduct}
+        onSave={handleSaveProduct}
       />
 
 
@@ -623,17 +611,9 @@ export default function Product() {
         onClose={() =>
           setEditProduct(null)
         }
-        onSave={(updatedProduct) => {
+        onSave={async (updatedProduct) => {
 
-          setProducts(
-            products.map(
-              (product) =>
-                product.id ===
-                updatedProduct.id
-                  ? updatedProduct
-                  : product
-            )
-          );
+          await handleSaveProduct(updatedProduct);
 
           setEditProduct(null);
 
@@ -659,7 +639,7 @@ export default function Product() {
         onClose={() =>
           setDeleteProductId(null)
         }
-        onDelete={deleteProduct}
+        onDelete={handleConfirmDelete}
       />
 
 

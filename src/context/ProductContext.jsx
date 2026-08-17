@@ -6,88 +6,257 @@ import {
   useEffect,
 } from "react";
 
+import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "./AuthContext";
+import { useStore } from "./StoreContext";
+
 const ProductContext = createContext();
+
+// Baris transaksi (snake_case) -> bentuk yang dipakai di seluruh app (camelCase)
+const mapTransaction = (row) => ({
+
+  id: row.id,
+  invoice: row.invoice,
+  cashier: row.cashier,
+
+  items: (row.transaction_items || []).map((ti) => ({
+    id: ti.id,
+    productId: ti.product_id,
+    name: ti.name,
+    price: Number(ti.price),
+    qty: ti.qty,
+  })),
+
+  subtotal: Number(row.subtotal),
+  discount: Number(row.discount_percent),
+  discountAmount: Number(row.discount_amount),
+  tax: Number(row.tax_percent),
+  taxAmount: Number(row.tax_amount),
+  total: Number(row.total),
+
+  paymentMethod: row.payment_method,
+  paid: Number(row.paid),
+  change: Number(row.change),
+
+  date: new Date(row.created_at).toLocaleString("id-ID"),
+  createdAt: row.created_at,
+
+});
 
 export function ProductProvider({ children }) {
 
-  const defaultProducts = [
-  {
-    id: 1,
-    name: "Kopi",
-    price: 15000,
-    stock: 20,
-    category: "Minuman",
-    emoji: "☕",
-    image: "",
-  },
-  {
-    id: 2,
-    name: "Mie Ayam",
-    price: 18000,
-    stock: 15,
-    category: "Makanan",
-    emoji: "🍜",
-    image: "",
-  },
-  {
-    id: 3,
-    name: "Es Teh",
-    price: 7000,
-    stock: 50,
-    category: "Minuman",
-    emoji: "🥤",
-    image: "",
-  },
-  {
-    id: 4,
-    name: "Kentang",
-    price: 12000,
-    stock: 30,
-    category: "Snack",
-    emoji: "🍟",
-    image: "",
-  },
-];
+  const { admin } = useAuth();
 
-const [products, setProducts] = useState(() => {
+  const { store } = useStore();
 
-  const saved = localStorage.getItem("products");
+  const [products, setProducts] = useState([]);
 
-  return saved
-    ? JSON.parse(saved)
-    : defaultProducts;
+  const [productsLoading, setProductsLoading] = useState(true);
 
-});
+  const [cart, setCart] = useState([]);
 
-  const [cart, setCart] = useState(() => {
+  const [history, setHistory] = useState([]);
 
-  const saved = localStorage.getItem("cart");
+  const [historyLoading, setHistoryLoading] = useState(true);
 
-  return saved
-    ? JSON.parse(saved)
-    : [];
 
-});
+  /* =========================
+     MUAT PRODUK & RIWAYAT DARI SUPABASE
+     (berjalan ulang setiap kali akun yang login berganti)
+  ========================= */
 
-  const [history, setHistory] = useState(() => {
+  useEffect(() => {
 
-  const saved = localStorage.getItem("history");
+    let active = true;
 
-  return saved
-    ? JSON.parse(saved)
-    : [];
+    if (!admin?.id) {
 
-});
+      setProducts([]);
+      setHistory([]);
+      setCart([]);
+      setProductsLoading(false);
+      setHistoryLoading(false);
+
+      return;
+
+    }
+
+    setProductsLoading(true);
+    setHistoryLoading(true);
+    setCart([]);
+
+    const loadProducts = async () => {
+
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("profile_id", admin.id)
+        .order("created_at", { ascending: true });
+
+      if (!active) return;
+
+      if (error) {
+        toast.error("Gagal memuat produk");
+        console.error(error);
+      } else {
+        setProducts(data || []);
+      }
+
+      setProductsLoading(false);
+
+    };
+
+    const loadHistory = async () => {
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*, transaction_items(*)")
+        .eq("profile_id", admin.id)
+        .order("created_at", { ascending: false });
+
+      if (!active) return;
+
+      if (error) {
+        toast.error("Gagal memuat riwayat transaksi");
+        console.error(error);
+      } else {
+        setHistory((data || []).map(mapTransaction));
+      }
+
+      setHistoryLoading(false);
+
+    };
+
+    loadProducts();
+    loadHistory();
+
+    return () => {
+      active = false;
+    };
+
+  }, [admin?.id]);
+
+
+  /* =========================
+     CRUD PRODUK
+  ========================= */
+
+  const addProduct = async (product) => {
+
+    if (!admin?.id) return { success: false };
+
+    const { data, error } = await supabase
+      .from("products")
+      .insert({
+
+        profile_id: admin.id,
+        name: product.name,
+        category: product.category || "",
+        price: Number(product.price) || 0,
+        stock: Number(product.stock) || 0,
+        emoji: product.emoji || "📦",
+        image: product.image || null,
+
+      })
+      .select()
+      .single();
+
+    if (error) {
+
+      toast.error("Gagal menambah produk");
+
+      return { success: false, message: error.message };
+
+    }
+
+    setProducts((prev) => [...prev, data]);
+
+    toast.success("Produk ditambahkan");
+
+    return { success: true, product: data };
+
+  };
+
+  const updateProduct = async (product) => {
+
+    if (!admin?.id) return { success: false };
+
+    const { data, error } = await supabase
+      .from("products")
+      .update({
+
+        name: product.name,
+        category: product.category || "",
+        price: Number(product.price) || 0,
+        stock: Number(product.stock) || 0,
+        emoji: product.emoji || "📦",
+        image: product.image || null,
+
+      })
+      .eq("id", product.id)
+      .eq("profile_id", admin.id)
+      .select()
+      .single();
+
+    if (error) {
+
+      toast.error("Gagal menyimpan perubahan produk");
+
+      return { success: false, message: error.message };
+
+    }
+
+    setProducts((prev) =>
+      prev.map((p) => (p.id === data.id ? data : p))
+    );
+
+    toast.success("Produk berhasil diperbarui");
+
+    return { success: true, product: data };
+
+  };
+
+  const deleteProduct = async (id) => {
+
+    if (!admin?.id) return { success: false };
+
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", id)
+      .eq("profile_id", admin.id);
+
+    if (error) {
+
+      toast.error("Gagal menghapus produk");
+
+      return { success: false, message: error.message };
+
+    }
+
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+
+    toast.success("Produk dihapus");
+
+    return { success: true };
+
+  };
+
+
+  /* =========================
+     KERANJANG (di memori, belum tersimpan ke Supabase
+     sampai checkout selesai / clearCart dipanggil)
+  ========================= */
 
   const addToCart = (product) => {
 
     if (product.stock <= 0) {
 
-  toast.error("Stok habis");
+      toast.error("Stok habis");
 
-  return;
+      return;
 
-}
+    }
 
     const exist = cart.find(
       (item) => item.id === product.id
@@ -96,305 +265,311 @@ const [products, setProducts] = useState(() => {
     if (exist) {
 
       setCart(
-
         cart.map((item) =>
-
           item.id === product.id
-            ? {
-                ...item,
-                qty: item.qty + 1,
-              }
+            ? { ...item, qty: item.qty + 1 }
             : item
-
         )
-
       );
 
     } else {
 
       setCart([
         ...cart,
-        {
-          ...product,
-          qty: 1,
-        },
+        { ...product, qty: 1 },
       ]);
 
     }
 
     setProducts(
-
       products.map((item) =>
-
         item.id === product.id
-          ? {
-              ...item,
-              stock: item.stock - 1,
-            }
+          ? { ...item, stock: item.stock - 1 }
           : item
-
       )
-
     );
+
     toast.success(`${product.name} ditambahkan`);
+
   };
 
   const increaseQty = (id) => {
 
-  const product = products.find((p) => p.id === id);
+    const product = products.find((p) => p.id === id);
 
-  if (!product || product.stock <= 0) {
-    
-    toast.error("Stok habis");
+    if (!product || product.stock <= 0) {
 
-    return;
+      toast.error("Stok habis");
 
-  }
-  setCart(
+      return;
 
-    cart.map((item) =>
+    }
 
-      item.id === id
-        ? {
-            ...item,
-            qty: item.qty + 1,
-          }
-        : item
+    setCart(
+      cart.map((item) =>
+        item.id === id
+          ? { ...item, qty: item.qty + 1 }
+          : item
+      )
+    );
 
-    )
-
-  );
-
-  setProducts(
-
-    products.map((item) =>
-
-      item.id === id
-        ? {
-            ...item,
-            stock: item.stock - 1,
-          }
-        : item
-
-    )
-
-  );
-
-};
-
-const removeCart = (id) => {
-
-  const item = cart.find((item) => item.id === id);
-
-  if (!item) return;
-
-  setProducts(
-
-    products.map((product) =>
-
-      product.id === id
-        ? {
-            ...product,
-            stock: product.stock + item.qty,
-          }
-        : product
-
-    )
-
-  );
-
-  setCart(
-
-    cart.filter((item) => item.id !== id)
-
-  );
-
-  toast.success("Produk dihapus");
-
-};
-
-const clearCart = (paymentInfo = {}) => {
-
-  if (cart.length === 0) return;
-
-  const store =
-    JSON.parse(localStorage.getItem("store")) || {};
-
-  const today = new Date();
-
-  const dateCode =
-    `${today.getFullYear()}${String(
-      today.getMonth() + 1
-    ).padStart(2, "0")}${String(
-      today.getDate()
-    ).padStart(2, "0")}`;
-
-  const invoice =
-    `INV-${dateCode}-${Date.now()}`;
-
-  const subtotal = cart.reduce(
-    (sum, item) =>
-      sum + item.price * item.qty,
-    0
-  );
-
-  const {
-    paymentMethod = "Tunai",
-    paid = subtotal,
-    change = 0,
-    discount = 0,
-    discountAmount = 0,
-    tax = 0,
-    taxAmount = 0,
-    total = subtotal,
-  } = paymentInfo;
-
-  const transaction = {
-
-    id: Date.now(),
-
-    invoice,
-
-    cashier:
-      store.cashier || "Admin",
-
-    storeName:
-      store.name || "KasirKu",
-
-    storeAddress:
-      store.address || "",
-
-    storePhone:
-      store.phone || "",
-
-    items: [...cart],
-
-    subtotal,
-    discount,
-    discountAmount,
-    tax,
-    taxAmount,
-    total,
-
-    paymentMethod,
-    paid,
-    change,
-
-    date: today.toLocaleString("id-ID"),
-
-    createdAt: today.toISOString(),
+    setProducts(
+      products.map((item) =>
+        item.id === id
+          ? { ...item, stock: item.stock - 1 }
+          : item
+      )
+    );
 
   };
 
-  setHistory((prev) => [
+  const removeCart = (id) => {
 
-    transaction,
+    const item = cart.find((item) => item.id === id);
 
-    ...prev,
+    if (!item) return;
 
-  ]);
+    setProducts(
+      products.map((product) =>
+        product.id === id
+          ? { ...product, stock: product.stock + item.qty }
+          : product
+      )
+    );
 
-  setCart([]);
+    setCart(
+      cart.filter((item) => item.id !== id)
+    );
 
-  toast.success("Pembayaran berhasil");
+    toast.success("Produk dihapus");
 
-  return transaction;
+  };
 
-};
+  const decreaseQty = (id) => {
 
-const decreaseQty = (id) => {
+    const item = cart.find((item) => item.id === id);
 
-  const item = cart.find((item) => item.id === id);
+    if (!item) return;
 
-  if (!item) return;
+    if (item.qty === 1) {
 
-  if (item.qty === 1) {
+      removeCart(id);
 
-    removeCart(id);
+      return;
 
-    return;
+    }
 
-  }
+    setCart(
+      cart.map((cartItem) =>
+        cartItem.id === id
+          ? { ...cartItem, qty: cartItem.qty - 1 }
+          : cartItem
+      )
+    );
 
-  setCart(
+    setProducts(
+      products.map((product) =>
+        product.id === id
+          ? { ...product, stock: product.stock + 1 }
+          : product
+      )
+    );
 
-    cart.map((cartItem) =>
+  };
 
-      cartItem.id === id
-        ? {
-            ...cartItem,
-            qty: cartItem.qty - 1,
-          }
-        : cartItem
 
-    )
+  /* =========================
+     CHECKOUT — simpan transaksi ke Supabase
+  ========================= */
 
-  );
+  const clearCart = async (paymentInfo = {}) => {
 
-  setProducts(
+    if (cart.length === 0 || !admin?.id) return null;
 
-    products.map((product) =>
+    const subtotal = cart.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0
+    );
 
-      product.id === id
-        ? {
-            ...product,
-            stock: product.stock + 1,
-          }
-        : product
+    const {
+      paymentMethod = "Tunai",
+      paid = subtotal,
+      change = 0,
+      discount = 0,
+      discountAmount = 0,
+      tax = 0,
+      taxAmount = 0,
+      total = subtotal,
+    } = paymentInfo;
 
-    )
+    const today = new Date();
 
-  );
+    const dateCode =
+      `${today.getFullYear()}${String(
+        today.getMonth() + 1
+      ).padStart(2, "0")}${String(
+        today.getDate()
+      ).padStart(2, "0")}`;
 
-};
+    const invoice = `INV-${dateCode}-${Date.now()}`;
 
-useEffect(() => {
+    // 1. Simpan transaksi
+    const { data: trxRow, error: trxError } = await supabase
+      .from("transactions")
+      .insert({
 
-  localStorage.setItem(
-    "products",
-    JSON.stringify(products)
-  );
+        profile_id: admin.id,
+        invoice,
+        cashier: store.owner || "Admin",
 
-}, [products]);
+        subtotal,
+        discount_percent: discount,
+        discount_amount: discountAmount,
+        tax_percent: tax,
+        tax_amount: taxAmount,
+        total,
 
-useEffect(() => {
+        payment_method: paymentMethod,
+        paid,
+        change,
 
-  localStorage.setItem(
-    "cart",
-    JSON.stringify(cart)
-  );
+      })
+      .select()
+      .single();
 
-}, [cart]);
+    if (trxError) {
 
-useEffect(() => {
+      toast.error("Gagal menyimpan transaksi");
+      console.error(trxError);
 
-  localStorage.setItem(
-    "history",
-    JSON.stringify(history)
-  );
+      return null;
 
-}, [history]);
+    }
+
+    // 2. Simpan item transaksi
+    const itemRows = cart.map((item) => ({
+
+      transaction_id: trxRow.id,
+      profile_id: admin.id,
+      product_id: item.id,
+      name: item.name,
+      price: item.price,
+      qty: item.qty,
+
+    }));
+
+    const { data: itemsData, error: itemsError } = await supabase
+      .from("transaction_items")
+      .insert(itemRows)
+      .select();
+
+    if (itemsError) {
+      console.error(itemsError);
+    }
+
+    // 3. Update stok produk di Supabase (nilai stok lokal sudah terpotong
+    //    sejak produk dimasukkan ke keranjang, jadi tinggal disamakan)
+    await Promise.all(
+
+      cart.map((item) => {
+
+        const current = products.find((p) => p.id === item.id);
+
+        if (!current) return null;
+
+        return supabase
+          .from("products")
+          .update({ stock: current.stock })
+          .eq("id", item.id)
+          .eq("profile_id", admin.id);
+
+      })
+
+    );
+
+    const transaction = mapTransaction({
+      ...trxRow,
+      transaction_items: itemsData || itemRows,
+    });
+
+    setHistory((prev) => [transaction, ...prev]);
+
+    setCart([]);
+
+    toast.success("Pembayaran berhasil");
+
+    return transaction;
+
+  };
+
+  /* =========================
+     RESET SEMUA DATA (Produk & Riwayat) DI SUPABASE
+  ========================= */
+
+  const resetAllData = async () => {
+
+    if (!admin?.id) return { success: false };
+
+    const { error: itemsError } = await supabase
+      .from("transaction_items")
+      .delete()
+      .eq("profile_id", admin.id);
+
+    const { error: trxError } = await supabase
+      .from("transactions")
+      .delete()
+      .eq("profile_id", admin.id);
+
+    const { error: productsError } = await supabase
+      .from("products")
+      .delete()
+      .eq("profile_id", admin.id);
+
+    if (itemsError || trxError || productsError) {
+
+      return {
+        success: false,
+        message: "Sebagian data gagal dihapus",
+      };
+
+    }
+
+    setProducts([]);
+    setHistory([]);
+    setCart([]);
+
+    return { success: true };
+
+  };
 
   return (
 
     <ProductContext.Provider
-  value={{
-    products,
-    setProducts,
+      value={{
 
-    cart,
-    setCart,
+        products,
+        productsLoading,
 
-    history,
-    setHistory,
+        cart,
+        setCart,
 
-    addToCart,
-    increaseQty,
-    decreaseQty,
-    removeCart,
-    clearCart,
-  }}
->
+        history,
+        historyLoading,
+
+        addProduct,
+        updateProduct,
+        deleteProduct,
+
+        addToCart,
+        increaseQty,
+        decreaseQty,
+        removeCart,
+        clearCart,
+
+        resetAllData,
+
+      }}
+    >
 
       {children}
 
