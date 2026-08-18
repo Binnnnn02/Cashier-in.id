@@ -6,14 +6,14 @@ import { useAuth } from "../context/AuthContext";
 // ============================================================
 // GANTI NILAI DI BAWAH INI SESUAI DATA BISNIS ANDA SENDIRI
 // ============================================================
-const PLAN_PRICE = "Rp30.000"; // TODO: ganti harga langganan per bulan
+const PLAN_PRICE = "Rp35.999"; // TODO: ganti harga langganan per bulan
 const PLAN_DURATION = "30 hari";
 
 const BANK_NAME = "BCA"; // TODO: ganti nama bank/e-wallet
 const BANK_ACCOUNT_NUMBER = "1234567890"; // TODO: ganti nomor rekening
 const BANK_ACCOUNT_NAME = "Nama Pemilik Rekening"; // TODO: ganti nama pemilik
 
-const WHATSAPP_NUMBER = "6281234567890"; // TODO: ganti nomor WA (format 62xxxxxxxxxx, tanpa + atau spasi)
+const WHATSAPP_NUMBER = "62895629208339"; // TODO: ganti nomor WA (format 62xxxxxxxxxx, tanpa + atau spasi)
 // ============================================================
 
 const HEADLINES = {
