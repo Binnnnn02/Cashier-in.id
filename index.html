@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sedang Dalam Pengembangan</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Poppins',sans-serif;
+    background:linear-gradient(135deg,#022c22,#065f46,#10b981);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    overflow:hidden;
+}
+
+.background{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+}
+
+.circle{
+    position:absolute;
+    border-radius:50%;
+    background:rgba(255,255,255,.08);
+    animation:float 10s infinite ease-in-out;
+}
+
+.circle:nth-child(1){
+    width:220px;
+    height:220px;
+    left:-70px;
+    top:100px;
+}
+
+.circle:nth-child(2){
+    width:160px;
+    height:160px;
+    right:120px;
+    top:60px;
+    animation-duration:12s;
+}
+
+.circle:nth-child(3){
+    width:280px;
+    height:280px;
+    right:-100px;
+    bottom:-60px;
+    animation-duration:14s;
+}
+
+@keyframes float{
+    0%,100%{
+        transform:translateY(0px);
+    }
+    50%{
+        transform:translateY(-25px);
+    }
+}
+
+.card{
+    position:relative;
+    z-index:2;
+    background:rgba(255,255,255,.1);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.2);
+    padding:50px;
+    border-radius:25px;
+    width:90%;
+    max-width:700px;
+    text-align:center;
+    box-shadow:0 15px 40px rgba(0,0,0,.3);
+}
+
+.icon{
+    font-size:70px;
+    margin-bottom:20px;
+    animation:spin 8s linear infinite;
+}
+
+@keyframes spin{
+    from{transform:rotate(0deg);}
+    to{transform:rotate(360deg);}
+}
+
+h1{
+    font-size:2.5rem;
+    margin-bottom:15px;
+}
+
+p{
+    font-size:1.05rem;
+    line-height:1.8;
+    color:#e5e7eb;
+}
+
+.status{
+    display:inline-block;
+    margin-top:30px;
+    padding:12px 28px;
+    border-radius:50px;
+    background:#10b981;
+    color:white;
+    font-weight:600;
+    box-shadow:0 0 20px rgba(16,185,129,.5);
+}
+
+.footer{
+    margin-top:35px;
+    font-size:.9rem;
+    color:#d1fae5;
+    opacity:.8;
+}
+
+@media(max-width:600px){
+    h1{
+        font-size:2rem;
+    }
+
+    .card{
+        padding:35px 25px;
+    }
+
+    .icon{
+        font-size:55px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="background">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+</div>
+
+<div class="card">
+
+    <div class="icon">⚙️</div>
+
+    <h1>Website Sedang Dalam Pengembangan</h1>
+
+    <p>
+        Kami sedang membangun sesuatu yang lebih baik.
+        Beberapa fitur masih dalam proses pengerjaan agar memberikan pengalaman terbaik.
+    </p>
+
+    <div class="status">
+        🚧 Dalam Pengembangan
+    </div>
+
+    <div class="footer">
+        Waktu penyelesaian belum dapat ditentukan.<br>
+        Terima kasih atas kesabaran Anda.
+    </div>
+
+</div>
+
+</body>
+</html>
