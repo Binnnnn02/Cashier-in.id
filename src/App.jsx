@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import { useAuth } from "./context/AuthContext";
+import { useStore } from "./context/StoreContext";
+import { getSubscriptionAccess } from "./lib/subscription";
 
 import MainLayout from "./layouts/MainLayout";
 
@@ -12,28 +14,65 @@ import Account from "./pages/Account";
 import History from "./pages/History";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ConfirmEmail from "./pages/ConfirmEmail";
+import SubscriptionLocked from "./pages/SubscriptionLocked";
 import NotFound from "./pages/NotFound";
+
+function LoadingScreen() {
+
+  return (
+
+    <div className="min-h-screen flex items-center justify-center bg-emerald-50">
+
+      <p className="text-emerald-700 font-medium">
+        Memuat...
+      </p>
+
+    </div>
+
+  );
+
+}
 
 export default function App() {
 
   const { admin, authLoading } = useAuth();
 
+  const { store, storeLoading } = useStore();
+
   // Masih mengecek sesi login (auto-login) saat app pertama dibuka
   if (authLoading) {
 
-    return (
-
-      <div className="min-h-screen flex items-center justify-center bg-emerald-50">
-
-        <p className="text-emerald-700 font-medium">
-          Memuat...
-        </p>
-
-      </div>
-
-    );
+    return <LoadingScreen />;
 
   }
+
+  // Halaman utama: butuh login DAN langganan aktif/trial
+  const renderProtectedArea = () => {
+
+    if (!admin) {
+
+      return <Navigate to="/login" replace />;
+
+    }
+
+    if (storeLoading) {
+
+      return <LoadingScreen />;
+
+    }
+
+    const access = getSubscriptionAccess(store);
+
+    if (!access.allowed) {
+
+      return <SubscriptionLocked reason={access.reason} />;
+
+    }
+
+    return <MainLayout />;
+
+  };
 
   return (
 
@@ -61,15 +100,22 @@ export default function App() {
         }
       />
 
-      {/* Semua halaman harus login */}
+      {/* Konfirmasi email setelah daftar */}
+
+      <Route
+        path="/confirm-email"
+        element={
+          admin
+            ? <Navigate to="/" replace />
+            : <ConfirmEmail />
+        }
+      />
+
+      {/* Semua halaman harus login DAN langganan aktif/trial */}
 
       <Route
         path="/"
-        element={
-          admin
-            ? <MainLayout />
-            : <Navigate to="/login" replace />
-        }
+        element={renderProtectedArea()}
       >
 
         <Route
