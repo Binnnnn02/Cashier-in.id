@@ -6,7 +6,7 @@ import { getSubscriptionAccess } from "./lib/subscription";
 
 import MainLayout from "./layouts/MainLayout";
 
-import Landing from "./pages/landing";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import Statistics from "./pages/Statistics";
