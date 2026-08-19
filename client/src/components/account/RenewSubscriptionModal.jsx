@@ -103,7 +103,7 @@ export default function RenewSubscriptionModal({ open, onClose }) {
         </a>
 
         <p className="text-center text-xs text-gray-400 mt-4">
-          Setelah konfirmasi, masa aktif Anda akan diperpanjang manual dalam waktu singkat.
+          Setelah konfirmasi, masa aktif Anda akan diperpanjang manual dalam waktu 1x24 jam.
         </p>
 
         <button
