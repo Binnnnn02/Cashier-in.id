@@ -26,6 +26,8 @@ export default function Statistics() {
 
   const filteredHistory = history.filter((trx) => {
 
+    if (trx.status === "void") return false;
+
     if (filter === "all") return true;
 
     const trxDate = new Date(trx.createdAt);

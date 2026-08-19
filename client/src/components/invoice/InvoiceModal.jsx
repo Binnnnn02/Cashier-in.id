@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { Printer } from "lucide-react";
 import { useStore } from "../../context/StoreContext";
 
 export default function InvoiceModal({
@@ -193,11 +194,17 @@ export default function InvoiceModal({
 
   };
 
-  // Cetak/unduh otomatis setelah pembayaran, sesuai toggle "Print otomatis" di Settings
+  // Cetak struk ke printer (browser print dialog), ukuran mengikuti
+  // struk thermal 80mm — lihat aturan #print-receipt di src/index.css
+  const printReceipt = () => {
+    window.print();
+  };
+
+  // Cetak otomatis setelah pembayaran, sesuai toggle "Print otomatis" di Settings
   useEffect(() => {
 
     if (open && autoPrint) {
-      downloadPDF();
+      printReceipt();
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -323,11 +330,115 @@ export default function InvoiceModal({
         </button>
 
         <button
+          onClick={printReceipt}
+          className="mt-3 w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white py-3 rounded-xl"
+        >
+          <Printer size={18} />
+          Cetak Struk
+        </button>
+
+        <button
           onClick={downloadPDF}
           className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl"
         >
           Download PDF
         </button>
+
+      </div>
+
+      {/* ==========================================
+          Versi cetak struk (thermal 80mm)
+          Disembunyikan di layar, hanya muncul saat
+          window.print() dipanggil — lihat src/index.css
+      ========================================== */}
+
+      <div id="print-receipt">
+
+        <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 14 }}>
+          {store.name || "BERJUTA CAFE"}
+        </div>
+
+        {showAddress && store.address && (
+          <div style={{ textAlign: "center" }}>{store.address}</div>
+        )}
+
+        {showPhone && store.phone && (
+          <div style={{ textAlign: "center" }}>{store.phone}</div>
+        )}
+
+        <div style={{ textAlign: "center", marginTop: 4 }}>{invoice}</div>
+        <div style={{ textAlign: "center" }}>
+          {new Date().toLocaleString("id-ID")}
+        </div>
+
+        <div style={{ borderTop: "1px dashed #000", margin: "6px 0" }} />
+
+        {cart.map((item) => (
+          <div key={item.id} style={{ marginBottom: 4 }}>
+            <div>{item.name}</div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>
+                {item.qty} x Rp{item.price.toLocaleString("id-ID")}
+              </span>
+              <span>
+                Rp{(item.price * item.qty).toLocaleString("id-ID")}
+              </span>
+            </div>
+          </div>
+        ))}
+
+        <div style={{ borderTop: "1px dashed #000", margin: "6px 0" }} />
+
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span>Subtotal</span>
+          <span>Rp{subtotal.toLocaleString("id-ID")}</span>
+        </div>
+
+        {discountAmount > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Diskon</span>
+            <span>-Rp{discountAmount.toLocaleString("id-ID")}</span>
+          </div>
+        )}
+
+        {showTax && taxAmount > 0 && (
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Pajak</span>
+            <span>Rp{taxAmount.toLocaleString("id-ID")}</span>
+          </div>
+        )}
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontWeight: "bold",
+            borderTop: "1px dashed #000",
+            marginTop: 4,
+            paddingTop: 4,
+          }}
+        >
+          <span>TOTAL</span>
+          <span>Rp{total.toLocaleString("id-ID")}</span>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+          <span>Bayar ({paymentMethod})</span>
+          <span>Rp{paid.toLocaleString("id-ID")}</span>
+        </div>
+
+        {isCash && (
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Kembali</span>
+            <span>Rp{change.toLocaleString("id-ID")}</span>
+          </div>
+        )}
+
+        <div style={{ borderTop: "1px dashed #000", margin: "6px 0" }} />
+
+        <div style={{ textAlign: "center" }}>
+          {store.footer || "Terima kasih telah berbelanja."}
+        </div>
 
       </div>
 

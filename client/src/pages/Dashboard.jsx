@@ -58,8 +58,12 @@ export default function Dashboard() {
      DASHBOARD DATA
   ========================= */
 
+  const activeHistory = history.filter(
+    (trx) => trx.status !== "void"
+  );
+
   const totalIncome =
-    history.reduce(
+    activeHistory.reduce(
       (sum, trx) =>
         sum + Number(trx.total || 0),
       0
@@ -67,7 +71,7 @@ export default function Dashboard() {
 
 
   const totalTransactions =
-    history.length;
+    activeHistory.length;
 
 
   const totalStock =

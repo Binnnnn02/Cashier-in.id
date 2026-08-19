@@ -5,6 +5,7 @@ import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import InvoiceModal from "../components/invoice/InvoiceModal";
+import VoidModal from "../components/invoice/VoidModal";
 import DashboardCard from "../components/dashboard/DashboardCard";
 
 import {
@@ -13,6 +14,7 @@ import {
   Receipt,
   Wallet,
   TrendingUp,
+  Undo2,
 } from "lucide-react";
 
 const paymentMethods = [
@@ -26,12 +28,23 @@ const paymentMethods = [
 
 export default function History() {
 
-  const { history } = useProducts();
+  const { history, voidTransaction } = useProducts();
 
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [methodFilter, setMethodFilter] = useState("Semua");
   const [selectedTrx, setSelectedTrx] = useState(null);
+  const [voidTarget, setVoidTarget] = useState(null);
+
+  const handleConfirmVoid = async () => {
+
+    if (!voidTarget) return;
+
+    await voidTransaction(voidTarget.id);
+
+    setVoidTarget(null);
+
+  };
 
   const filteredHistory = history.filter((trx) => {
 
@@ -103,9 +116,13 @@ export default function History() {
      RINGKASAN
   ========================= */
 
-  const totalTransactions = filteredHistory.length;
+  const activeHistory = filteredHistory.filter(
+    (trx) => trx.status !== "void"
+  );
 
-  const totalRevenue = filteredHistory.reduce(
+  const totalTransactions = activeHistory.length;
+
+  const totalRevenue = activeHistory.reduce(
     (sum, trx) => sum + Number(trx.total || 0),
     0
   );
@@ -131,7 +148,7 @@ export default function History() {
 
   const rows = [];
 
-  filteredHistory.forEach((trx) => {
+  activeHistory.forEach((trx) => {
 
     trx.items.forEach((item) => {
 
@@ -169,7 +186,7 @@ export default function History() {
 
   });
 
-  const total = filteredHistory.reduce(
+  const total = activeHistory.reduce(
 
     (sum, trx) => sum + Number(trx.total || 0),
 
@@ -195,7 +212,7 @@ const downloadExcel = () => {
 
   const data = [];
 
-  filteredHistory.forEach((trx) => {
+  activeHistory.forEach((trx) => {
 
     trx.items.forEach((item) => {
 
@@ -395,12 +412,15 @@ const downloadExcel = () => {
             const subtotal = trx.subtotal ?? trx.total;
             const discountAmount = trx.discountAmount ?? 0;
             const taxAmount = trx.taxAmount ?? 0;
+            const isVoid = trx.status === "void";
 
             return (
 
               <div
                 key={trx.id}
-                className="bg-white rounded-xl shadow p-5"
+                className={`bg-white rounded-xl shadow p-5 ${
+                  isVoid ? "opacity-60" : ""
+                }`}
               >
 
                 <div className="flex justify-between items-start flex-wrap gap-2">
@@ -417,9 +437,19 @@ const downloadExcel = () => {
 
                   </div>
 
-                  <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium">
-                    {trx.paymentMethod || "Tunai"}
-                  </span>
+                  <div className="flex items-center gap-2">
+
+                    {isVoid && (
+                      <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-sm font-medium">
+                        Dibatalkan
+                      </span>
+                    )}
+
+                    <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium">
+                      {trx.paymentMethod || "Tunai"}
+                    </span>
+
+                  </div>
 
                 </div>
 
@@ -502,6 +532,18 @@ const downloadExcel = () => {
                     Lihat Struk
                   </button>
 
+                  {!isVoid && (
+
+                    <button
+                      onClick={() => setVoidTarget(trx)}
+                      className="flex items-center gap-2 bg-amber-50 hover:bg-amber-100 text-amber-700 px-4 py-2 rounded-lg"
+                    >
+                      <Undo2 size={16} />
+                      Batalkan Transaksi
+                    </button>
+
+                  )}
+
                 </div>
 
               </div>
@@ -526,6 +568,13 @@ const downloadExcel = () => {
         paid={selectedTrx?.paid ?? selectedTrx?.total ?? 0}
         change={selectedTrx?.change ?? 0}
         invoice={selectedTrx?.invoice ?? ""}
+      />
+
+      <VoidModal
+        open={voidTarget !== null}
+        onClose={() => setVoidTarget(null)}
+        onConfirm={handleConfirmVoid}
+        invoice={voidTarget?.invoice ?? ""}
       />
 
     </div>

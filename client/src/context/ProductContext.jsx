@@ -18,6 +18,7 @@ const mapTransaction = (row) => ({
   id: row.id,
   invoice: row.invoice,
   cashier: row.cashier,
+  status: row.status || "completed",
 
   items: (row.transaction_items || []).map((ti) => ({
     id: ti.id,
@@ -503,6 +504,86 @@ export function ProductProvider({ children }) {
   };
 
   /* =========================
+     BATALKAN TRANSAKSI (VOID)
+     — menandai transaksi sebagai dibatalkan & mengembalikan stok produk
+  ========================= */
+
+  const voidTransaction = async (id) => {
+
+    if (!admin?.id) return { success: false };
+
+    const trx = history.find((h) => h.id === id);
+
+    if (!trx) return { success: false, message: "Transaksi tidak ditemukan" };
+
+    if (trx.status === "void") {
+      return { success: false, message: "Transaksi sudah dibatalkan" };
+    }
+
+    // 1. Tandai transaksi sebagai void di Supabase
+    const { error: trxError } = await supabase
+      .from("transactions")
+      .update({ status: "void" })
+      .eq("id", id)
+      .eq("profile_id", admin.id);
+
+    if (trxError) {
+
+      toast.error("Gagal membatalkan transaksi");
+      console.error(trxError);
+
+      return { success: false, message: trxError.message };
+
+    }
+
+    // 2. Kembalikan stok tiap produk yang ada di transaksi ini
+    const updatedProducts = [...products];
+
+    await Promise.all(
+
+      (trx.items || []).map(async (item) => {
+
+        const idx = updatedProducts.findIndex(
+          (p) => p.id === item.productId
+        );
+
+        if (idx === -1) return null; // produk sudah dihapus, lewati
+
+        const newStock =
+          Number(updatedProducts[idx].stock || 0) + Number(item.qty || 0);
+
+        updatedProducts[idx] = {
+          ...updatedProducts[idx],
+          stock: newStock,
+        };
+
+        return supabase
+          .from("products")
+          .update({ stock: newStock })
+          .eq("id", item.productId)
+          .eq("profile_id", admin.id);
+
+      })
+
+    );
+
+    setProducts(updatedProducts);
+
+    // 3. Update status transaksi di state lokal
+    setHistory((prev) =>
+      prev.map((h) =>
+        h.id === id ? { ...h, status: "void" } : h
+      )
+    );
+
+    toast.success("Transaksi dibatalkan, stok dikembalikan");
+
+    return { success: true };
+
+  };
+
+
+  /* =========================
      RESET SEMUA DATA (Produk & Riwayat) DI SUPABASE
   ========================= */
 
@@ -565,6 +646,8 @@ export function ProductProvider({ children }) {
         decreaseQty,
         removeCart,
         clearCart,
+
+        voidTransaction,
 
         resetAllData,
 
