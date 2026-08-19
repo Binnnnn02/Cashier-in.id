@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 
 import EditProfileModal from "../components/account/EditProfileModal";
 import ChangePasswordModal from "../components/account/ChangePasswordModal";
+import RenewSubscriptionModal from "../components/account/RenewSubscriptionModal";
 
 import {
   User,
@@ -91,6 +92,9 @@ export default function Account() {
     useState(false);
 
   const [openChangePassword, setOpenChangePassword] =
+    useState(false);
+
+  const [openRenewSubscription, setOpenRenewSubscription] =
     useState(false);
 
 
@@ -203,7 +207,7 @@ export default function Account() {
               </p>
 
               <button
-                onClick={() => navigate("/subscription")}
+                onClick={() => setOpenRenewSubscription(true)}
                 className="mt-3 text-sm font-semibold text-amber-800 hover:text-amber-900 underline"
               >
                 Perpanjang langganan
@@ -729,6 +733,16 @@ export default function Account() {
           return true;
 
         }}
+      />
+
+
+      {/* ======================================================
+          RENEW SUBSCRIPTION MODAL
+      ====================================================== */}
+
+      <RenewSubscriptionModal
+        open={openRenewSubscription}
+        onClose={() => setOpenRenewSubscription(false)}
       />
 
     </div>

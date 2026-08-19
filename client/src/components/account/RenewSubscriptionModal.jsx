@@ -1,7 +1,7 @@
-import { Lock, Copy, MessageCircle } from "lucide-react";
+import { Copy, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   PLAN_PRICE,
   PLAN_DURATION,
@@ -9,32 +9,13 @@ import {
   BANK_ACCOUNT_NUMBER,
   BANK_ACCOUNT_NAME,
   buildWhatsappLink,
-} from "../lib/subscriptionPlan";
+} from "../../lib/subscriptionPlan";
 
-const HEADLINES = {
+export default function RenewSubscriptionModal({ open, onClose }) {
 
-  trial_expired: {
-    title: "Masa Trial Anda Sudah Berakhir",
-    desc: "Trial gratis 7 hari sudah habis. Aktifkan langganan untuk lanjut memakai Cashier-in.",
-  },
+  const { admin } = useAuth();
 
-  subscription_expired: {
-    title: "Masa Aktif Anda Sudah Berakhir",
-    desc: "Trial atau langganan Anda sudah habis masa berlakunya. Aktifkan/perpanjang sekarang untuk lanjut memakai Cashier-in.",
-  },
-
-  inactive: {
-    title: "Langganan Belum Aktif",
-    desc: "Akun Anda belum memiliki langganan aktif. Silakan aktivasi untuk mulai menggunakan Cashier-in.",
-  },
-
-};
-
-export default function SubscriptionLocked({ reason }) {
-
-  const { admin, logout } = useAuth();
-
-  const headline = HEADLINES[reason] || HEADLINES.inactive;
+  if (!open) return null;
 
   const copyAccountNumber = () => {
 
@@ -48,29 +29,19 @@ export default function SubscriptionLocked({ reason }) {
 
   return (
 
-    <div className="min-h-screen flex items-center justify-center bg-emerald-50 px-4 py-10">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
 
-      <div className="bg-white w-[480px] max-w-full rounded-2xl shadow-xl p-8">
+      <div className="bg-white rounded-2xl w-[420px] max-w-full p-6 shadow-xl">
 
-        <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-6">
+        <h2 className="text-xl font-bold text-center">
+          Perpanjang Langganan
+        </h2>
 
-          <Lock size={28} className="text-amber-600" />
-
-        </div>
-
-        <h1 className="text-2xl font-bold text-center">
-
-          {headline.title}
-
-        </h1>
-
-        <p className="text-gray-500 text-center mt-3 leading-relaxed">
-
-          {headline.desc}
-
+        <p className="text-center text-gray-500 text-sm mt-2">
+          Perpanjang sekarang supaya toko Anda tidak terkunci saat masa aktif habis.
         </p>
 
-        <div className="bg-emerald-50 rounded-xl p-5 mt-6 text-center">
+        <div className="bg-emerald-50 rounded-xl p-5 mt-5 text-center">
 
           <p className="text-sm text-gray-500">
             Biaya Langganan
@@ -132,16 +103,14 @@ export default function SubscriptionLocked({ reason }) {
         </a>
 
         <p className="text-center text-xs text-gray-400 mt-4">
-
-          Setelah konfirmasi, akun Anda akan diaktifkan manual dalam waktu singkat.
-
+          Setelah konfirmasi, masa aktif Anda akan diperpanjang manual dalam waktu singkat.
         </p>
 
         <button
-          onClick={logout}
-          className="w-full text-center text-sm text-gray-400 hover:text-gray-600 mt-6"
+          onClick={onClose}
+          className="w-full text-center text-sm text-gray-500 hover:text-gray-700 mt-6"
         >
-          Logout
+          Tutup
         </button>
 
       </div>
