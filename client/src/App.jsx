@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import { useAuth } from "./context/AuthContext";
 import { useStore } from "./context/StoreContext";
@@ -20,114 +20,114 @@ import SubscriptionLocked from "./pages/SubscriptionLocked";
 import NotFound from "./pages/NotFound";
 
 function LoadingScreen() {
+
   return (
+
     <div className="min-h-screen flex items-center justify-center bg-emerald-50">
+
       <p className="text-emerald-700 font-medium">
         Memuat...
       </p>
+
     </div>
+
   );
+
 }
 
 export default function App() {
+
   const { admin, authLoading } = useAuth();
 
   const { store, storeLoading } = useStore();
 
+  const location = useLocation();
+
   // Masih mengecek sesi login (auto-login) saat app pertama dibuka
   if (authLoading) {
+
     return <LoadingScreen />;
+
   }
 
-  // Area aplikasi: butuh login DAN langganan aktif/trial
+  // Halaman utama: butuh login DAN langganan aktif/trial
   const renderProtectedArea = () => {
+
     if (!admin) {
+
+      // Belum login, tapi lagi di halaman utama -> tampilkan Landing publik
+      if (location.pathname === "/") {
+
+        return <Landing />;
+
+      }
+
       return <Navigate to="/login" replace />;
+
     }
 
     if (storeLoading) {
+
       return <LoadingScreen />;
+
     }
 
     const access = getSubscriptionAccess(store);
 
     if (!access.allowed) {
+
       return <SubscriptionLocked reason={access.reason} />;
+
     }
 
     return <MainLayout />;
+
   };
 
   return (
+
     <Routes>
-      {/* =========================
-          LANDING PAGE
-          ========================= */}
 
-      <Route
-        path="/"
-        element={
-          admin ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <Landing />
-          )
-        }
-      />
-
-      {/* =========================
-          LOGIN
-          ========================= */}
+      {/* Login */}
 
       <Route
         path="/login"
         element={
-          admin ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <Login />
-          )
+          admin
+            ? <Navigate to="/" replace />
+            : <Login />
         }
       />
 
-      {/* =========================
-          REGISTER
-          ========================= */}
+      {/* Register */}
 
       <Route
         path="/register"
         element={
-          admin ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <Register />
-          )
+          admin
+            ? <Navigate to="/" replace />
+            : <Register />
         }
       />
 
-      {/* =========================
-          CONFIRM EMAIL
-          ========================= */}
+      {/* Konfirmasi email setelah daftar */}
 
       <Route
         path="/confirm-email"
         element={
-          admin ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <ConfirmEmail />
-          )
+          admin
+            ? <Navigate to="/" replace />
+            : <ConfirmEmail />
         }
       />
 
-      {/* =========================
-          PROTECTED APPLICATION
-          ========================= */}
+      {/* Semua halaman harus login DAN langganan aktif/trial */}
 
       <Route
-        path="/dashboard"
+        path="/"
         element={renderProtectedArea()}
       >
+
         <Route
           index
           element={<Dashboard />}
@@ -157,16 +157,18 @@ export default function App() {
           path="account"
           element={<Account />}
         />
+
       </Route>
 
-      {/* =========================
-          404
-          ========================= */}
+      {/* 404 */}
 
       <Route
         path="*"
         element={<NotFound />}
       />
+
     </Routes>
+
   );
+
 }
