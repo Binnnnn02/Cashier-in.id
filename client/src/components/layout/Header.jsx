@@ -7,7 +7,6 @@ import {
 import {
   Search,
   Bell,
-  User,
   PackageX,
   ChevronRight,
   Sparkles,
@@ -124,7 +123,7 @@ export default function Header() {
       <div className="min-w-0">
         <div className="flex items-center gap-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-gray-900 tracking-tight">
+          <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
             {pageTitle}
           </h1>
         </div>
@@ -317,11 +316,8 @@ export default function Header() {
             flex
             items-center
             gap-2.5
-            bg-gradient-to-r
-            from-emerald-600
-            to-emerald-700
-            hover:from-emerald-700
-            hover:to-emerald-800
+            bg-emerald-600
+            hover:bg-emerald-700
             text-white
             px-3.5
             sm:px-4

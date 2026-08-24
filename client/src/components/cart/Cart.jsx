@@ -168,7 +168,7 @@ export default function Cart() {
           disabled={cart.length === 0}
           className={`mt-4 w-full py-3.5 rounded-2xl font-bold text-base transition-all duration-200 shadow-sm ${
             cart.length > 0
-              ? "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white active:scale-95"
+              ? "bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95"
               : "bg-gray-200 text-gray-400 cursor-not-allowed"
           }`}
         >

@@ -11,7 +11,7 @@ export default function MainLayout() {
 
   return (
 
-    <div className="min-h-screen bg-emerald-50">
+    <div className="min-h-screen bg-[#F6F8F6]">
 
       {/* MOBILE OVERLAY */}
 
