@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -9,17 +9,8 @@ export default function EditProfileModal({
   onSave,
 }) {
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => account?.email || "");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-
-    if (open) {
-      setEmail(account?.email || "");
-      setLoading(false);
-    }
-
-  }, [open, account]);
 
   if (!open) return null;
 
@@ -55,11 +46,15 @@ export default function EditProfileModal({
 
   return (
 
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+    >
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-2xl w-[420px] p-6"
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl w-[420px] max-w-full p-6 shadow-xl"
       >
 
         <div className="flex justify-between items-center mb-6">

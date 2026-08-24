@@ -111,18 +111,20 @@ export function StoreProvider({ children }) {
 
     let active = true;
 
-    if (!admin?.id) {
-
-      setStoreState(defaultStore);
-      setStoreLoading(false);
-
-      return;
-
-    }
-
-    setStoreLoading(true);
-
     const loadProfile = async () => {
+
+      if (!admin?.id) {
+
+        if (active) {
+          setStoreState(defaultStore);
+          setStoreLoading(false);
+        }
+
+        return;
+
+      }
+
+      setStoreLoading(true);
 
       const { data, error } = await supabase
         .from("profiles")

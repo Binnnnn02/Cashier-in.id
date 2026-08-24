@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { supabase } from "../lib/supabaseClient";
+import { playCashSound } from "../lib/sound";
 import { useAuth } from "./AuthContext";
 import { useStore } from "./StoreContext";
 
@@ -70,66 +71,63 @@ export function ProductProvider({ children }) {
 
     let active = true;
 
-    if (!admin?.id) {
+    const loadData = async () => {
 
-      setProducts([]);
-      setHistory([]);
+      if (!admin?.id) {
+
+        if (active) {
+          setProducts([]);
+          setHistory([]);
+          setCart([]);
+          setProductsLoading(false);
+          setHistoryLoading(false);
+        }
+
+        return;
+
+      }
+
+      setProductsLoading(true);
+      setHistoryLoading(true);
       setCart([]);
-      setProductsLoading(false);
-      setHistoryLoading(false);
 
-      return;
-
-    }
-
-    setProductsLoading(true);
-    setHistoryLoading(true);
-    setCart([]);
-
-    const loadProducts = async () => {
-
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("profile_id", admin.id)
-        .order("created_at", { ascending: true });
+      const [
+        { data: prodData, error: prodError },
+        { data: histData, error: histError },
+      ] = await Promise.all([
+        supabase
+          .from("products")
+          .select("*")
+          .eq("profile_id", admin.id)
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("transactions")
+          .select("*, transaction_items(*)")
+          .eq("profile_id", admin.id)
+          .order("created_at", { ascending: false }),
+      ]);
 
       if (!active) return;
 
-      if (error) {
+      if (prodError) {
         toast.error("Gagal memuat produk");
-        console.error(error);
+        console.error(prodError);
       } else {
-        setProducts(data || []);
+        setProducts(prodData || []);
       }
-
       setProductsLoading(false);
 
-    };
-
-    const loadHistory = async () => {
-
-      const { data, error } = await supabase
-        .from("transactions")
-        .select("*, transaction_items(*)")
-        .eq("profile_id", admin.id)
-        .order("created_at", { ascending: false });
-
-      if (!active) return;
-
-      if (error) {
+      if (histError) {
         toast.error("Gagal memuat riwayat transaksi");
-        console.error(error);
+        console.error(histError);
       } else {
-        setHistory((data || []).map(mapTransaction));
+        setHistory((histData || []).map(mapTransaction));
       }
-
       setHistoryLoading(false);
 
     };
 
-    loadProducts();
-    loadHistory();
+    loadData();
 
     return () => {
       active = false;
@@ -497,9 +495,34 @@ export function ProductProvider({ children }) {
 
     setCart([]);
 
+    if (store?.soundNotif) {
+      playCashSound();
+    }
+
     toast.success("Pembayaran berhasil");
 
     return transaction;
+
+  };
+
+  /* =========================
+     KOSONGKAN KERANJANG & KEMBALIKAN STOK
+  ========================= */
+
+  const resetCart = () => {
+
+    if (cart.length === 0) return;
+
+    setProducts((prev) =>
+      prev.map((p) => {
+        const item = cart.find((c) => c.id === p.id);
+        return item ? { ...p, stock: p.stock + item.qty } : p;
+      })
+    );
+
+    setCart([]);
+
+    toast.success("Keranjang dikosongkan");
 
   };
 
@@ -646,6 +669,7 @@ export function ProductProvider({ children }) {
         decreaseQty,
         removeCart,
         clearCart,
+        resetCart,
 
         voidTransaction,
 

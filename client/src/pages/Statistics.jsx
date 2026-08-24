@@ -30,7 +30,9 @@ export default function Statistics() {
 
     if (filter === "all") return true;
 
-    const trxDate = new Date(trx.createdAt);
+    const trxDate = trx.createdAt ? new Date(trx.createdAt) : new Date();
+
+    if (isNaN(trxDate.getTime())) return false;
 
     const now = new Date();
 
@@ -48,9 +50,9 @@ export default function Statistics() {
       (now - trxDate) /
       (1000 * 60 * 60 * 24);
 
-    if (filter === "7") return diff <= 7;
+    if (filter === "7") return diff >= 0 && diff <= 7;
 
-    if (filter === "30") return diff <= 30;
+    if (filter === "30") return diff >= 0 && diff <= 30;
 
     return true;
 
@@ -210,7 +212,7 @@ export default function Statistics() {
 
     autoTable(doc, {
 
-      startY: doc.lastAutoTable.finalY + 10,
+      startY: (doc.lastAutoTable ? doc.lastAutoTable.finalY : 80) + 10,
 
       head: [["Produk", "Jumlah Terjual"]],
 

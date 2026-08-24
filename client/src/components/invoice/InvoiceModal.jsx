@@ -39,7 +39,7 @@ export default function InvoiceModal({
     // Nama toko
     doc.setFontSize(18);
     doc.text(
-      store.name || "BERJUTA CAFE",
+      store.name || "Cashier-in",
       20,
       y
     );
@@ -207,19 +207,24 @@ export default function InvoiceModal({
       printReceipt();
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, autoPrint]);
 
   if (!open) return null;
 
   return (
 
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+    >
 
-      <div className="bg-white rounded-2xl w-[420px] max-h-[90vh] overflow-y-auto p-6">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl w-[420px] max-w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl"
+      >
 
         <h2 className="text-2xl font-bold text-center">
-          {store.name || "BERJUTA CAFE"}
+          {store.name || "Cashier-in"}
         </h2>
 
         {showAddress && store.address && (
@@ -324,14 +329,14 @@ export default function InvoiceModal({
 
         <button
           onClick={onClose}
-          className="mt-6 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl"
+          className="mt-6 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold transition"
         >
           Tutup
         </button>
 
         <button
           onClick={printReceipt}
-          className="mt-3 w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white py-3 rounded-xl"
+          className="mt-3 w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white py-3 rounded-xl font-semibold transition"
         >
           <Printer size={18} />
           Cetak Struk
@@ -339,7 +344,7 @@ export default function InvoiceModal({
 
         <button
           onClick={downloadPDF}
-          className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl"
+          className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
         >
           Download PDF
         </button>
@@ -355,7 +360,7 @@ export default function InvoiceModal({
       <div id="print-receipt">
 
         <div style={{ textAlign: "center", fontWeight: "bold", fontSize: 14 }}>
-          {store.name || "BERJUTA CAFE"}
+          {store.name || "Cashier-in"}
         </div>
 
         {showAddress && store.address && (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Search,
@@ -28,23 +28,19 @@ export default function Product() {
   } = useProducts();
 
   const [searchParams] = useSearchParams();
+  const urlSearch = searchParams.get("search") || "";
 
   const [isModalOpen, setIsModalOpen] =
     useState(false);
 
-  const [search, setSearch] =
-    useState(searchParams.get("search") || "");
+  const [search, setSearch] = useState(urlSearch);
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
 
   // Sinkron kalau ada ?search= baru dari Header (mis. klik notifikasi stok)
-  useEffect(() => {
-
-    const keyword = searchParams.get("search");
-
-    if (keyword !== null) {
-      setSearch(keyword);
-    }
-
-  }, [searchParams]);
+  if (urlSearch !== prevUrlSearch) {
+    setPrevUrlSearch(urlSearch);
+    setSearch(urlSearch);
+  }
 
   const [categoryFilter, setCategoryFilter] =
     useState("Semua");
@@ -592,8 +588,10 @@ export default function Product() {
       ========================= */}
 
       <ProductModal
+        key={isModalOpen ? "add-modal-open" : "add-modal-closed"}
         open={isModalOpen}
         product={null}
+        existingCategories={categories}
         onClose={() =>
           setIsModalOpen(false)
         }
@@ -606,8 +604,10 @@ export default function Product() {
       ========================= */}
 
       <ProductModal
+        key={editProduct ? `edit-${editProduct.id}` : "edit-none"}
         open={editProduct !== null}
         product={editProduct}
+        existingCategories={categories}
         onClose={() =>
           setEditProduct(null)
         }

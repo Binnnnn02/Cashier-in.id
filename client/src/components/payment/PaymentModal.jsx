@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { useStore } from "../../context/StoreContext";
 
@@ -15,22 +15,16 @@ export default function PaymentModal({
   subtotal = 0,
   discountAmount = 0,
   taxAmount = 0,
-  total,
+  total = 0,
   onClose,
   onPay,
 }) {
   const { store } = useStore();
 
   const [money, setMoney] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("Tunai");
-
-  useEffect(() => {
-    if (open) {
-      setMoney("");
-      setPaymentMethod(store.defaultPaymentMethod || "Tunai");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  const [paymentMethod, setPaymentMethod] = useState(
+    () => store.defaultPaymentMethod || "Tunai"
+  );
 
   if (!open) return null;
 
@@ -42,9 +36,15 @@ export default function PaymentModal({
   const canPay = isCash ? paid >= total : true;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+    >
 
-      <div className="bg-white rounded-2xl w-[450px] max-h-[90vh] overflow-y-auto p-6">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl w-[450px] max-w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl"
+      >
 
         <div className="flex justify-between items-center mb-6">
 
@@ -52,8 +52,12 @@ export default function PaymentModal({
             Pembayaran
           </h2>
 
-          <button onClick={onClose}>
-            <X />
+          <button
+            onClick={onClose}
+            className="p-1 rounded-lg hover:bg-gray-100 transition"
+            aria-label="Tutup"
+          >
+            <X size={20} />
           </button>
 
         </div>
@@ -62,11 +66,11 @@ export default function PaymentModal({
 
           <div>
 
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-sm">
               Total Belanja
             </p>
 
-            <h1 className="text-3xl font-bold text-emerald-600">
+            <h1 className="text-3xl font-bold text-emerald-600 mt-1">
               Rp{total.toLocaleString("id-ID")}
             </h1>
 
@@ -86,8 +90,9 @@ export default function PaymentModal({
 
                 <button
                   key={method}
+                  type="button"
                   onClick={() => setPaymentMethod(method)}
-                  className={`py-2 rounded-xl text-sm border transition ${
+                  className={`py-2 rounded-xl text-sm border font-medium transition ${
                     paymentMethod === method
                       ? "bg-emerald-600 text-white border-emerald-600"
                       : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
@@ -106,24 +111,42 @@ export default function PaymentModal({
 
             <>
 
-              <input
-                type="number"
-                placeholder="Masukkan uang pelanggan"
-                value={money}
-                onChange={(e) => setMoney(e.target.value)}
-                className="w-full border rounded-xl p-3"
-              />
+              <div>
+
+                <label className="font-semibold text-sm text-gray-600 block mb-1">
+                  Uang Pelanggan
+                </label>
+
+                <input
+                  type="number"
+                  placeholder="Masukkan nominal uang..."
+                  value={money}
+                  onChange={(e) => setMoney(e.target.value)}
+                  className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  autoFocus
+                />
+
+              </div>
 
               {/* Tombol Nominal Cepat */}
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-5 gap-2">
+
+                <button
+                  type="button"
+                  onClick={() => setMoney(String(total))}
+                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded-lg py-2 text-xs transition border border-emerald-200"
+                >
+                  Uang Pas
+                </button>
 
                 {[10000, 20000, 50000, 100000].map((nominal) => (
 
                   <button
                     key={nominal}
+                    type="button"
                     onClick={() => setMoney(String(nominal))}
-                    className="bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-sm"
+                    className="bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-xs font-medium transition"
                   >
                     {nominal >= 1000
                       ? `${nominal / 1000}K`
@@ -139,14 +162,14 @@ export default function PaymentModal({
           ) : (
 
             <div className="border rounded-xl p-4 bg-emerald-50 text-emerald-700 text-sm">
-              Pembayaran via {paymentMethod} dianggap lunas sesuai total belanja.
+              Pembayaran via <strong>{paymentMethod}</strong> otomatis tercatat lunas sesuai total belanja (Rp{total.toLocaleString("id-ID")}).
             </div>
 
           )}
 
           {/* Ringkasan */}
 
-          <div className="border rounded-xl p-4 space-y-3">
+          <div className="border rounded-xl p-4 space-y-3 bg-gray-50/50">
 
             {discountAmount > 0 && (
 
@@ -177,17 +200,17 @@ export default function PaymentModal({
 
             )}
 
-            <div className="flex justify-between">
+            <div className="flex justify-between text-base font-semibold">
 
               <span>Total</span>
 
-              <span className="font-semibold">
+              <span>
                 Rp{total.toLocaleString("id-ID")}
               </span>
 
             </div>
 
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm text-gray-600">
 
               <span>Dibayar</span>
 
@@ -212,15 +235,15 @@ export default function PaymentModal({
               >
                 {isCash && paid === 0
                   ? "-"
-                  : `Rp${change.toLocaleString("id-ID")}`}
+                  : `Rp${Math.max(0, change).toLocaleString("id-ID")}`}
               </span>
 
             </div>
 
             {isCash && paid > 0 && paid < total && (
 
-              <p className="text-red-500 text-sm">
-                Uang pelanggan masih kurang.
+              <p className="text-red-500 text-xs font-medium">
+                Uang pelanggan masih kurang Rp{(total - paid).toLocaleString("id-ID")}.
               </p>
 
             )}
@@ -232,28 +255,28 @@ export default function PaymentModal({
         <div className="flex justify-end gap-3 mt-8">
 
           <button
+            type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-gray-200"
+            className="px-5 py-2.5 rounded-xl bg-gray-200 hover:bg-gray-300 transition font-medium text-gray-700"
           >
             Batal
           </button>
 
           <button
+            type="button"
             disabled={!canPay}
             onClick={() => {
 
               onPay({
                 paymentMethod,
                 paid,
-                change,
+                change: Math.max(0, change),
               });
 
-              onClose();
-
             }}
-            className={`px-5 py-2 rounded-xl text-white transition ${
+            className={`px-5 py-2.5 rounded-xl text-white font-semibold transition ${
               canPay
-                ? "bg-emerald-600 hover:bg-emerald-700"
+                ? "bg-emerald-600 hover:bg-emerald-700 shadow-sm"
                 : "bg-gray-400 cursor-not-allowed"
             }`}
           >

@@ -11,9 +11,15 @@ export default function DeleteModal({
 
   return (
 
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+    >
 
-      <div className="bg-white rounded-2xl w-[420px] p-6 shadow-xl">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl w-[420px] max-w-full p-6 shadow-xl"
+      >
 
         <div className="flex justify-center">
 

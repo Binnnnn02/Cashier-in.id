@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { useStore } from "../context/StoreContext";
 import { useProducts } from "../context/ProductContext";
@@ -14,11 +14,7 @@ import {
   Save,
 } from "lucide-react";
 
-export default function Settings() {
-
-  const { store, storeLoading, updateStore } = useStore();
-
-  const { products, history, resetAllData } = useProducts();
+function SettingsForm({ store, updateStore, products, history, resetAllData }) {
 
   const [storeName, setStoreName] = useState(store.name);
   const [owner, setOwner] = useState(store.owner);
@@ -42,30 +38,7 @@ export default function Settings() {
   );
 
   const [saving, setSaving] = useState(false);
-
-  // Begitu data profil toko selesai dimuat dari Supabase, isi form dengan nilainya
-  useEffect(() => {
-
-    if (storeLoading) return;
-
-    setStoreName(store.name);
-    setOwner(store.owner);
-    setPhone(store.phone);
-    setAddress(store.address);
-    setTax(store.tax);
-    setDiscount(store.discount);
-    setFooter(store.footer);
-    setShowLogo(store.showLogo);
-    setShowAddress(store.showAddress);
-    setShowPhone(store.showPhone);
-    setShowTax(store.showTax);
-    setStockNotif(store.stockNotif);
-    setSoundNotif(store.soundNotif);
-    setAutoPrint(store.autoPrint);
-    setPaymentMethod(store.defaultPaymentMethod);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeLoading]);
+  const [resetting, setResetting] = useState(false);
 
   const saveSettings = async () => {
 
@@ -153,8 +126,6 @@ export default function Settings() {
 
   };
 
-  const [resetting, setResetting] = useState(false);
-
   const resetAll = async () => {
 
     if (
@@ -183,18 +154,6 @@ export default function Settings() {
     toast.success("Data produk & riwayat berhasil dihapus");
 
   };
-
-  if (storeLoading) {
-
-    return (
-
-      <div className="flex items-center justify-center py-20 text-gray-400">
-        Memuat pengaturan...
-      </div>
-
-    );
-
-  }
 
   return (
     <div className="space-y-6">
@@ -617,5 +576,29 @@ export default function Settings() {
       </div>
 
     </div>
+  );
+}
+
+export default function Settings() {
+  const { store, storeLoading, updateStore } = useStore();
+  const { products, history, resetAllData } = useProducts();
+
+  if (storeLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-gray-400">
+        Memuat pengaturan...
+      </div>
+    );
+  }
+
+  return (
+    <SettingsForm
+      key={store.name + store.phone}
+      store={store}
+      updateStore={updateStore}
+      products={products}
+      history={history}
+      resetAllData={resetAllData}
+    />
   );
 }

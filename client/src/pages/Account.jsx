@@ -663,6 +663,7 @@ export default function Account() {
       ====================================================== */}
 
       <EditProfileModal
+        key={openEditProfile ? (admin?.email || "open") : "closed"}
         open={openEditProfile}
         account={admin}
         onClose={() =>
@@ -700,6 +701,7 @@ export default function Account() {
       ====================================================== */}
 
       <ChangePasswordModal
+        key={openChangePassword ? "pw-open" : "pw-closed"}
         open={openChangePassword}
         onClose={() =>
           setOpenChangePassword(false)
@@ -741,6 +743,7 @@ export default function Account() {
       ====================================================== */}
 
       <RenewSubscriptionModal
+        key={openRenewSubscription ? "renew-open" : "renew-closed"}
         open={openRenewSubscription}
         onClose={() => setOpenRenewSubscription(false)}
       />

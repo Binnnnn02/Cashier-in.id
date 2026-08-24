@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -12,17 +12,6 @@ export default function ChangePasswordModal({
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-
-    if (open) {
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setLoading(false);
-    }
-
-  }, [open]);
 
   if (!open) return null;
 
@@ -56,11 +45,15 @@ export default function ChangePasswordModal({
 
   return (
 
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+    >
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-2xl w-[420px] p-6"
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl w-[420px] max-w-full p-6 shadow-xl"
       >
 
         <div className="flex justify-between items-center mb-6">

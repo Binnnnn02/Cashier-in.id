@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   Wallet,
   Boxes,
+  Search,
 } from "lucide-react";
 
 
@@ -25,6 +26,9 @@ export default function Dashboard() {
 
   const [selectedCategory, setSelectedCategory] =
     useState("Semua");
+
+  const [dashboardSearch, setDashboardSearch] =
+    useState("");
 
 
   /* =========================
@@ -45,13 +49,19 @@ export default function Dashboard() {
      FILTER PRODUCT
   ========================= */
 
-  const filteredProducts =
-    selectedCategory === "Semua"
-      ? products
-      : products.filter(
-          (product) =>
-            product.category === selectedCategory
-        );
+  const filteredProducts = products.filter((product) => {
+
+    const matchCategory =
+      selectedCategory === "Semua" ||
+      product.category === selectedCategory;
+
+    const matchSearch =
+      !dashboardSearch ||
+      product.name?.toLowerCase().includes(dashboardSearch.toLowerCase());
+
+    return matchCategory && matchSearch;
+
+  });
 
 
   /* =========================
@@ -164,17 +174,33 @@ export default function Dashboard() {
             "
           >
 
-            <h2
-              className="
-                text-xl
-                sm:text-2xl
-                font-bold
-                mb-5
-                sm:mb-6
-              "
-            >
-              Daftar Produk
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
+
+              <h2
+                className="
+                  text-xl
+                  sm:text-2xl
+                  font-bold
+                "
+              >
+                Daftar Produk
+              </h2>
+
+              <div className="relative w-full sm:w-64">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Cari menu / produk..."
+                  value={dashboardSearch}
+                  onChange={(e) => setDashboardSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+            </div>
 
 
             {/* CATEGORY FILTER */}

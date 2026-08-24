@@ -71,7 +71,7 @@ export default function History() {
   if (filter === "all") return true;
 
   // Ambil waktu transaksi
-  const trxDate = new Date(trx.createdAt || trx.date);
+  const trxDate = trx.createdAt ? new Date(trx.createdAt) : new Date();
 
   // Kalau tanggal tidak valid
   if (isNaN(trxDate.getTime())) return false;
@@ -194,13 +194,15 @@ export default function History() {
 
   );
 
+  const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : 40;
+
   doc.text(
 
     `Total Pendapatan : Rp${total.toLocaleString("id-ID")}`,
 
     14,
 
-    doc.lastAutoTable.finalY + 15
+    finalY + 15
 
   );
 
@@ -557,6 +559,7 @@ const downloadExcel = () => {
       }
 
       <InvoiceModal
+        key={selectedTrx ? `inv-${selectedTrx.id}` : "inv-none"}
         open={selectedTrx !== null}
         onClose={() => setSelectedTrx(null)}
         cart={selectedTrx?.items || []}
@@ -571,6 +574,7 @@ const downloadExcel = () => {
       />
 
       <VoidModal
+        key={voidTarget ? `void-${voidTarget.id}` : "void-none"}
         open={voidTarget !== null}
         onClose={() => setVoidTarget(null)}
         onConfirm={handleConfirmVoid}

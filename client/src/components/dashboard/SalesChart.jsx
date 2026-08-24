@@ -25,16 +25,18 @@ export default function SalesChart() {
 
   const salesByDay = {};
 
-  history.forEach((trx) => {
-    const date = new Date(trx.createdAt)
-      .toLocaleDateString("id-ID");
+  history
+    .filter((trx) => trx.status !== "void" && trx.createdAt)
+    .forEach((trx) => {
+      const date = new Date(trx.createdAt)
+        .toLocaleDateString("id-ID");
 
-    if (!salesByDay[date]) {
-      salesByDay[date] = 0;
-    }
+      if (!salesByDay[date]) {
+        salesByDay[date] = 0;
+      }
 
-    salesByDay[date] += trx.total;
-  });
+      salesByDay[date] += Number(trx.total || 0);
+    });
 
   const labels = Object.keys(salesByDay).reverse();
 

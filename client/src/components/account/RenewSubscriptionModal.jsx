@@ -29,9 +29,15 @@ export default function RenewSubscriptionModal({ open, onClose }) {
 
   return (
 
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+    >
 
-      <div className="bg-white rounded-2xl w-[420px] max-w-full p-6 shadow-xl">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl w-[420px] max-w-full p-6 shadow-xl"
+      >
 
         <h2 className="text-xl font-bold text-center">
           Perpanjang Langganan
