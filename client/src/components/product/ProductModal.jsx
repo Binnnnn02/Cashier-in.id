@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, Package, DollarSign, Boxes, Tag, Smile, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function ProductModal({
@@ -41,18 +41,14 @@ export default function ProductModal({
   if (!open) return null;
 
   const handleChange = (e) => {
-
     setForm((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
-
   };
 
   const handleImage = (e) => {
-
     const file = e.target.files[0];
-
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
@@ -61,22 +57,16 @@ export default function ProductModal({
     }
 
     const reader = new FileReader();
-
     reader.onload = () => {
-
       setForm((prev) => ({
         ...prev,
         image: reader.result,
       }));
-
     };
-
     reader.readAsDataURL(file);
-
   };
 
   const handleSubmit = (e) => {
-
     e.preventDefault();
 
     if (!form.name.trim()) {
@@ -103,75 +93,123 @@ export default function ProductModal({
     });
 
     onClose();
-
   };
 
   return (
-
     <div
       onClick={onClose}
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-emerald-950/45 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
     >
-
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-2xl w-[500px] max-w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl"
+        className="bg-gradient-to-b from-white via-white to-emerald-50/30 rounded-3xl w-[520px] max-w-full max-h-[92vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-emerald-100 animate-scale-in"
+        style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.18)" }}
       >
-
-        <div className="flex justify-between items-center mb-6">
-
-          <h2 className="text-2xl font-bold">
-            {product ? "Edit Produk" : "Tambah Produk"}
-          </h2>
+        {/* Modal Header */}
+        <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700">
+              <Package size={22} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-gray-900">
+                {product ? "Perbarui Data Produk" : "Tambah Produk Baru"}
+              </h2>
+              <p className="text-xs text-gray-400 font-medium">
+                {product ? "Sesuaikan harga, nama atau stok" : "Masukkan informasi produk baru ke kasir"}
+              </p>
+            </div>
+          </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-gray-100 transition"
+            className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
             aria-label="Tutup"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
-
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="space-y-4 pt-5">
 
+          {/* Nama Produk */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
               Nama Produk *
             </label>
             <input
               name="name"
               value={form.name}
               onChange={handleChange}
-              placeholder="Contoh: Kopi Susu Aren"
-              className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Contoh: Kopi Susu Gula Aren"
+              className="
+                w-full
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                p-3.5
+                text-sm
+                font-medium
+                text-gray-900
+                placeholder-gray-400
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+              "
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-
+          {/* Harga & Stok Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1">
-                Harga (Rp) *
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
+                Harga Jual (Rp) *
               </label>
-              <input
-                name="price"
-                type="number"
-                min="0"
-                value={form.price}
-                onChange={handleChange}
-                placeholder="15000"
-                className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                required
-              />
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">
+                  Rp
+                </span>
+                <input
+                  name="price"
+                  type="number"
+                  min="0"
+                  value={form.price}
+                  onChange={handleChange}
+                  placeholder="15000"
+                  className="
+                    w-full
+                    pl-11
+                    pr-4
+                    py-3.5
+                    bg-gray-50/80
+                    border
+                    border-gray-200
+                    rounded-2xl
+                    text-sm
+                    font-bold
+                    text-gray-900
+                    focus:outline-none
+                    focus:bg-white
+                    focus:border-emerald-500
+                    focus:ring-4
+                    focus:ring-emerald-500/10
+                    transition-all
+                  "
+                  required
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1">
-                Stok *
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
+                Jumlah Stok *
               </label>
               <input
                 name="stock"
@@ -179,25 +217,41 @@ export default function ProductModal({
                 min="0"
                 value={form.stock}
                 onChange={handleChange}
-                placeholder="100"
-                className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="50"
+                className="
+                  w-full
+                  p-3.5
+                  bg-gray-50/80
+                  border
+                  border-gray-200
+                  rounded-2xl
+                  text-sm
+                  font-bold
+                  text-gray-900
+                  focus:outline-none
+                  focus:bg-white
+                  focus:border-emerald-500
+                  focus:ring-4
+                  focus:ring-emerald-500/10
+                  transition-all
+                "
                 required
               />
             </div>
-
           </div>
 
+          {/* Kategori */}
           <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="text-xs font-semibold text-gray-500">
-                Kategori
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-600">
+                Kategori Produk
               </label>
               <button
                 type="button"
                 onClick={() => setCustomCategory(!customCategory)}
-                className="text-xs text-emerald-600 hover:underline"
+                className="text-xs font-extrabold text-emerald-700 hover:text-emerald-800 underline"
               >
-                {customCategory ? "Pilih dari daftar" : "+ Kategori baru"}
+                {customCategory ? "Pilih dari daftar" : "+ Buat kategori baru"}
               </button>
             </div>
 
@@ -206,15 +260,48 @@ export default function ProductModal({
                 name="category"
                 value={form.category}
                 onChange={handleChange}
-                placeholder="Ketik kategori baru..."
-                className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="Ketik kategori baru (contoh: Dessert)..."
+                className="
+                  w-full
+                  bg-gray-50/80
+                  border
+                  border-gray-200
+                  rounded-2xl
+                  p-3.5
+                  text-sm
+                  font-medium
+                  text-gray-900
+                  focus:outline-none
+                  focus:bg-white
+                  focus:border-emerald-500
+                  focus:ring-4
+                  focus:ring-emerald-500/10
+                  transition-all
+                "
               />
             ) : (
               <select
                 name="category"
                 value={form.category}
                 onChange={handleChange}
-                className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="
+                  w-full
+                  bg-gray-50/80
+                  border
+                  border-gray-200
+                  rounded-2xl
+                  p-3.5
+                  text-sm
+                  font-bold
+                  text-gray-900
+                  focus:outline-none
+                  focus:bg-white
+                  focus:border-emerald-500
+                  focus:ring-4
+                  focus:ring-emerald-500/10
+                  transition-all
+                  cursor-pointer
+                "
               >
                 {uniqueCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -225,83 +312,119 @@ export default function ProductModal({
             )}
           </div>
 
+          {/* Emoji */}
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">
-              Emoji Ikon
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
+              Emoji / Ikon Tampilan
             </label>
             <input
               name="emoji"
               value={form.emoji}
               onChange={handleChange}
-              placeholder="Emoji (☕ 🍜 🥤 🍟 📦)"
-              className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Contoh: ☕ 🍜 🥤 🍟 📦"
+              className="
+                w-full
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                p-3.5
+                text-sm
+                font-medium
+                text-gray-900
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+              "
             />
           </div>
 
+          {/* Foto Produk */}
           <div>
-
-            <label className="block mb-1 text-xs font-semibold text-gray-500">
-              Foto Produk (Opsional)
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
+              Upload Foto Produk (Opsional, max 2MB)
             </label>
-
             <input
               type="file"
               accept="image/*"
               onChange={handleImage}
-              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+              className="
+                w-full
+                text-xs
+                text-gray-500
+                file:mr-4
+                file:py-2.5
+                file:px-4
+                file:rounded-xl
+                file:border-0
+                file:text-xs
+                file:font-bold
+                file:bg-emerald-50
+                file:text-emerald-700
+                hover:file:bg-emerald-100
+                cursor-pointer
+              "
             />
-
           </div>
 
-          {
+          {form.image && (
+            <div className="relative rounded-2xl overflow-hidden border border-emerald-100 shadow-sm mt-2">
+              <img
+                src={form.image}
+                alt="Preview Produk"
+                className="w-full h-40 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setForm(prev => ({ ...prev, image: "" }))}
+                className="absolute top-2.5 right-2.5 bg-rose-600 text-white rounded-xl px-3 py-1 text-xs font-bold hover:bg-rose-700 transition shadow-sm"
+              >
+                Hapus Foto
+              </button>
+            </div>
+          )}
 
-            form.image && (
-
-              <div className="relative">
-                <img
-                  src={form.image}
-                  alt="Preview"
-                  className="w-full h-36 object-cover rounded-xl border"
-                />
-                <button
-                  type="button"
-                  onClick={() => setForm(prev => ({ ...prev, image: "" }))}
-                  className="absolute top-2 right-2 bg-red-600 text-white rounded-lg p-1 text-xs hover:bg-red-700 transition"
-                  title="Hapus foto"
-                >
-                  Hapus Foto
-                </button>
-              </div>
-
-            )
-
-          }
-
-          <div className="flex justify-end gap-3 mt-8 pt-4 border-t">
-
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl bg-gray-200 hover:bg-gray-300 transition font-medium text-gray-700"
+              className="px-5 py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 transition font-bold text-xs sm:text-sm text-gray-600"
             >
               Batal
             </button>
 
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition text-white font-semibold shadow-sm"
+              className="
+                px-6
+                py-3
+                rounded-2xl
+                bg-gradient-to-r
+                from-emerald-600
+                via-emerald-600
+                to-emerald-700
+                hover:from-emerald-700
+                hover:to-emerald-800
+                transition-all
+                text-white
+                font-extrabold
+                text-xs
+                sm:text-sm
+                shadow-md
+                shadow-emerald-600/25
+                active:scale-95
+              "
             >
               {product ? "Simpan Perubahan" : "Tambah Produk"}
             </button>
-
           </div>
 
         </form>
-
       </div>
-
     </div>
-
   );
-
 }

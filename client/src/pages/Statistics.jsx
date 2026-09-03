@@ -4,7 +4,17 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { FileDown, FileSpreadsheet } from "lucide-react";
+import {
+  FileDown,
+  FileSpreadsheet,
+  TrendingUp,
+  Receipt,
+  Boxes,
+  Award,
+  DollarSign,
+  BarChart3,
+  LineChart as LineChartIcon,
+} from "lucide-react";
 
 import {
   ResponsiveContainer,
@@ -139,7 +149,7 @@ export default function Statistics() {
       .reverse()
       .map((trx, index) => ({
 
-        name: `T${index + 1}`,
+        name: `Trx ${index + 1}`,
 
         total:
           Number(trx.total || 0),
@@ -162,18 +172,18 @@ export default function Statistics() {
       }));
 
 
-  const periodLabel =
-    {
-      all: "Semua Waktu",
-      today: "Hari Ini",
-      "7": "7 Hari Terakhir",
-      "30": "30 Hari Terakhir",
-    }[filter] || "Semua Waktu";
-
-
   /* =========================
      EXPORT PDF & EXCEL
   ========================= */
+
+  const periodLabel =
+    filter === "all"
+      ? "Semua Waktu"
+      : filter === "today"
+      ? "Hari Ini"
+      : filter === "7"
+      ? "7 Hari Terakhir"
+      : "30 Hari Terakhir";
 
   const downloadPDF = () => {
 
@@ -187,19 +197,19 @@ export default function Statistics() {
     doc.text(
       `Tanggal Cetak : ${new Date().toLocaleString("id-ID")}`,
       14,
-      32
+      33
     );
 
     autoTable(doc, {
 
       startY: 40,
 
-      head: [["Ringkasan", "Nilai"]],
+      head: [["Metrik Ringkasan", "Nilai"]],
 
       body: [
-        ["Pendapatan", `Rp${totalIncome.toLocaleString("id-ID")}`],
-        ["Total Transaksi", `${totalTransaction}`],
-        ["Produk Terjual", `${totalItemSold} pcs`],
+        ["Total Pendapatan", `Rp${totalIncome.toLocaleString("id-ID")}`],
+        ["Total Transaksi", `${totalTransaction} transaksi`],
+        ["Total Produk Terjual", `${totalItemSold} pcs`],
         ["Rata-rata / Transaksi", `Rp${Math.round(averageTransaction).toLocaleString("id-ID")}`],
         ["Produk Terlaris", bestSeller ? `${bestSeller[0]} (${bestSeller[1]} pcs)` : "-"],
       ],
@@ -243,12 +253,10 @@ export default function Statistics() {
     ]);
 
     const productSheet = XLSX.utils.json_to_sheet(
-
       sortedProducts.map(([name, qty]) => ({
-        "Produk": name,
-        "Jumlah Terjual": qty,
+        "Nama Produk": name,
+        "Jumlah Terjual (pcs)": qty,
       }))
-
     );
 
     const workbook = XLSX.utils.book_new();
@@ -277,7 +285,7 @@ export default function Statistics() {
   const filters = [
     {
       value: "all",
-      label: "Semua",
+      label: "Semua Waktu",
     },
     {
       value: "today",
@@ -285,94 +293,96 @@ export default function Statistics() {
     },
     {
       value: "7",
-      label: "7 Hari",
+      label: "7 Hari Terakhir",
     },
     {
       value: "30",
-      label: "30 Hari",
+      label: "30 Hari Terakhir",
     },
   ];
 
 
   return (
 
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in">
 
       {/* =========================
-          HEADER
+          HEADER & ACTIONS
       ========================= */}
 
-      <div>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
 
-          <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+            Statistik Penjualan
+          </h1>
 
-            <h1 className="text-2xl sm:text-3xl font-bold">
-              Statistik
-            </h1>
-
-            <p className="text-sm sm:text-base text-gray-500 mt-1">
-              Ringkasan seluruh penjualan.
-            </p>
-
-          </div>
-
-          <div className="flex gap-3">
-
-            <button
-              onClick={downloadPDF}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl"
-            >
-              <FileDown size={18} />
-              Export PDF
-            </button>
-
-            <button
-              onClick={downloadExcel}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl"
-            >
-              <FileSpreadsheet size={18} />
-              Export Excel
-            </button>
-
-          </div>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1">
+            Analisis performa omzet, tren volume transaksi, dan produk terlaris.
+          </p>
 
         </div>
 
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
 
-        {/* FILTER */}
+          <button
+            onClick={downloadPDF}
+            className="
+              flex-1
+              sm:flex-none
+              bg-white
+              hover:bg-rose-50
+              text-rose-700
+              border
+              border-rose-200
+              px-4
+              py-2.5
+              rounded-2xl
+              flex
+              items-center
+              justify-center
+              gap-2
+              text-xs
+              sm:text-sm
+              font-bold
+              shadow-sm
+              transition-all
+              active:scale-95
+            "
+          >
+            <FileDown size={16} />
+            <span>Export PDF</span>
+          </button>
 
-        <div className="flex gap-2 sm:gap-3 mt-5 flex-wrap">
-
-          {filters.map((item) => (
-
-            <button
-              key={item.value}
-              onClick={() =>
-                setFilter(item.value)
-              }
-              className={`
-                px-3
-                sm:px-4
-                py-2
-                text-sm
-                sm:text-base
-                rounded-xl
-                transition
-                ${
-                  filter === item.value
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }
-              `}
-            >
-
-              {item.label}
-
-            </button>
-
-          ))}
+          <button
+            onClick={downloadExcel}
+            className="
+              flex-1
+              sm:flex-none
+              bg-white
+              hover:bg-emerald-50
+              text-emerald-700
+              border
+              border-emerald-200
+              px-4
+              py-2.5
+              rounded-2xl
+              flex
+              items-center
+              justify-center
+              gap-2
+              text-xs
+              sm:text-sm
+              font-bold
+              shadow-sm
+              transition-all
+              active:scale-95
+            "
+          >
+            <FileSpreadsheet size={16} />
+            <span>Export Excel</span>
+          </button>
 
         </div>
 
@@ -380,7 +390,54 @@ export default function Statistics() {
 
 
       {/* =========================
-          STATISTIK CARD
+          FILTER PILLS
+      ========================= */}
+
+      <div
+        className="
+          flex
+          items-center
+          gap-2
+          overflow-x-auto
+          pb-1
+          no-scrollbar
+        "
+      >
+
+        {filters.map((item) => {
+          const isActive = filter === item.value;
+
+          return (
+            <button
+              key={item.value}
+              onClick={() => setFilter(item.value)}
+              className={`
+                px-4
+                py-2
+                rounded-2xl
+                text-xs
+                sm:text-sm
+                font-bold
+                whitespace-nowrap
+                transition-all
+                duration-200
+                ${
+                  isActive
+                    ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-md shadow-emerald-600/20"
+                    : "bg-white text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 border border-gray-200"
+                }
+              `}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+
+      </div>
+
+
+      {/* =========================
+          STATISTIK 5 CARDS
       ========================= */}
 
       <div
@@ -388,130 +445,116 @@ export default function Statistics() {
           grid
           grid-cols-1
           sm:grid-cols-2
+          lg:grid-cols-3
           xl:grid-cols-5
           gap-4
           sm:gap-5
-          lg:gap-6
         "
       >
 
         {/* Pendapatan */}
-
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
-
-          <p className="text-gray-500 text-sm">
-            Pendapatan
-          </p>
-
-          <h2 className="text-xl sm:text-2xl xl:text-3xl font-bold text-emerald-600 mt-2 truncate">
-
-            Rp
-            {totalIncome.toLocaleString(
-              "id-ID"
-            )}
-
+        <div className="bg-gradient-to-b from-white via-white to-emerald-50/40 rounded-3xl p-5 border border-emerald-200/80 shadow-sm border-l-4 border-l-emerald-500">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Pendapatan
+            </p>
+            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+              <DollarSign size={18} />
+            </div>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-black text-gray-900 mt-2 truncate">
+            Rp{totalIncome.toLocaleString("id-ID")}
           </h2>
-
+          <p className="text-[11px] text-emerald-600 font-semibold mt-1">
+            {periodLabel}
+          </p>
         </div>
-
 
         {/* Total Transaksi */}
-
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
-
-          <p className="text-gray-500 text-sm">
-            Total Transaksi
-          </p>
-
-          <h2 className="text-2xl sm:text-3xl font-bold mt-2">
-
-            {totalTransaction}
-
+        <div className="bg-gradient-to-b from-white via-white to-blue-50/40 rounded-3xl p-5 border border-blue-100 shadow-sm border-l-4 border-l-blue-500">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Transaksi
+            </p>
+            <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+              <Receipt size={18} />
+            </div>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-black text-gray-900 mt-2">
+            {totalTransaction} <span className="text-sm font-medium text-gray-400">trx</span>
           </h2>
-
+          <p className="text-[11px] text-blue-600 font-semibold mt-1">
+            Status sukses
+          </p>
         </div>
-
 
         {/* Produk Terjual */}
-
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
-
-          <p className="text-gray-500 text-sm">
-            Produk Terjual
-          </p>
-
-          <h2 className="text-2xl sm:text-3xl font-bold mt-2">
-
-            {totalItemSold}
-
+        <div className="bg-gradient-to-b from-white via-white to-amber-50/40 rounded-3xl p-5 border border-amber-100 shadow-sm border-l-4 border-l-amber-500">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Produk Terjual
+            </p>
+            <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
+              <Boxes size={18} />
+            </div>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-black text-gray-900 mt-2">
+            {totalItemSold} <span className="text-sm font-medium text-gray-400">pcs</span>
           </h2>
-
+          <p className="text-[11px] text-amber-600 font-semibold mt-1">
+            Volume item
+          </p>
         </div>
-
 
         {/* Rata-rata */}
-
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
-
-          <p className="text-gray-500 text-sm">
-            Rata-rata
-          </p>
-
-          <h2 className="text-xl sm:text-2xl xl:text-3xl font-bold mt-2 truncate">
-
-            Rp
-            {Math.round(
-              averageTransaction
-            ).toLocaleString("id-ID")}
-
+        <div className="bg-gradient-to-b from-white via-white to-purple-50/40 rounded-3xl p-5 border border-purple-100 shadow-sm border-l-4 border-l-purple-500">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Rata-rata / Trx
+            </p>
+            <div className="p-2 rounded-xl bg-purple-50 text-purple-600">
+              <TrendingUp size={18} />
+            </div>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-black text-gray-900 mt-2 truncate">
+            Rp{Math.round(averageTransaction).toLocaleString("id-ID")}
           </h2>
-
+          <p className="text-[11px] text-purple-600 font-semibold mt-1">
+            Basket size
+          </p>
         </div>
 
-
         {/* Produk Terlaris */}
-
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
-
-          <p className="text-gray-500 text-sm">
-            Produk Terlaris
-          </p>
-
-          {bestSeller ? (
-
-            <>
-
-              <h2 className="text-xl sm:text-2xl font-bold mt-2 truncate">
-
-                {bestSeller[0]}
-
-              </h2>
-
-              <p className="text-sm text-emerald-600 mt-2">
-
-                Terjual {bestSeller[1]} pcs
-
-              </p>
-
-            </>
-
-          ) : (
-
-            <p className="mt-3 text-sm text-gray-400">
-
-              Belum ada penjualan
-
+        <div className="bg-gradient-to-b from-white via-white to-rose-50/40 rounded-3xl p-5 border border-rose-100 shadow-sm border-l-4 border-l-rose-500">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Terlaris (Top 1)
             </p>
-
+            <div className="p-2 rounded-xl bg-rose-50 text-rose-600">
+              <Award size={18} />
+            </div>
+          </div>
+          {bestSeller ? (
+            <>
+              <h2 className="text-lg font-black text-gray-900 mt-2 truncate">
+                {bestSeller[0]}
+              </h2>
+              <p className="text-[11px] text-rose-600 font-bold mt-1">
+                🔥 Terjual {bestSeller[1]} pcs
+              </p>
+            </>
+          ) : (
+            <p className="mt-3 text-xs text-gray-400 font-medium">
+              Belum ada penjualan
+            </p>
           )}
-
         </div>
 
       </div>
 
 
       {/* =========================
-          CHART
+          CHARTS SECTION
       ========================= */}
 
       <div
@@ -519,31 +562,53 @@ export default function Statistics() {
           grid
           grid-cols-1
           xl:grid-cols-2
-          gap-4
-          sm:gap-6
+          gap-6
         "
       >
 
         {/* Grafik Pendapatan */}
 
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+        <div
+          className="
+            bg-gradient-to-b
+            from-white
+            via-white
+            to-emerald-50/20
+            rounded-3xl
+            shadow-sm
+            border
+            border-emerald-100/70
+            p-5
+            sm:p-7
+          "
+        >
 
-          <h2 className="text-lg sm:text-xl font-bold mb-5">
-            Grafik Pendapatan
-          </h2>
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
+              <LineChartIcon size={18} />
+            </div>
+            <div>
+              <h3 className="text-lg font-extrabold text-gray-900">
+                Tren Pendapatan Transaksi
+              </h3>
+              <p className="text-xs text-gray-400 font-medium">
+                Pergerakan nominal penjualan per transaksi
+              </p>
+            </div>
+          </div>
 
           {chartData.length > 0 ? (
 
             <ResponsiveContainer
               width="100%"
-              height={280}
+              height={300}
             >
 
               <LineChart
                 data={chartData}
                 margin={{
                   top: 10,
-                  right: 10,
+                  right: 15,
                   left: -15,
                   bottom: 0,
                 }}
@@ -551,15 +616,18 @@ export default function Statistics() {
 
                 <CartesianGrid
                   strokeDasharray="3 3"
+                  stroke="#f0fdf4"
                 />
 
                 <XAxis
                   dataKey="name"
-                  fontSize={12}
+                  fontSize={11}
+                  stroke="#9ca3af"
                 />
 
                 <YAxis
                   fontSize={11}
+                  stroke="#9ca3af"
                 />
 
                 <Tooltip
@@ -568,15 +636,28 @@ export default function Statistics() {
                       value
                     ).toLocaleString("id-ID")}`
                   }
+                  contentStyle={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: "1rem",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                    border: "1px solid #d1fae5",
+                  }}
                 />
 
                 <Line
                   type="monotone"
                   dataKey="total"
-                  stroke="#10b981"
+                  stroke="#059669"
                   strokeWidth={3}
                   dot={{
                     r: 4,
+                    fill: "#059669",
+                    strokeWidth: 2,
+                    stroke: "#ffffff",
+                  }}
+                  activeDot={{
+                    r: 6,
+                    fill: "#047857",
                   }}
                 />
 
@@ -586,7 +667,7 @@ export default function Statistics() {
 
           ) : (
 
-            <div className="h-[280px] flex items-center justify-center text-gray-400">
+            <div className="h-[300px] flex items-center justify-center text-gray-400 text-sm font-medium">
 
               Belum ada data penjualan
 
@@ -597,33 +678,57 @@ export default function Statistics() {
         </div>
 
 
-        {/* Produk Terlaris */}
+        {/* Produk Terlaris Bar Chart */}
 
-        <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6">
+        <div
+          className="
+            bg-gradient-to-b
+            from-white
+            via-white
+            to-emerald-50/20
+            rounded-3xl
+            shadow-sm
+            border
+            border-emerald-100/70
+            p-5
+            sm:p-7
+          "
+        >
 
-          <h2 className="text-lg sm:text-xl font-bold mb-5">
-            Produk Terlaris
-          </h2>
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
+              <BarChart3 size={18} />
+            </div>
+            <div>
+              <h3 className="text-lg font-extrabold text-gray-900">
+                Top Produk Terlaris
+              </h3>
+              <p className="text-xs text-gray-400 font-medium">
+                Volume pcs produk yang paling diminati pembeli
+              </p>
+            </div>
+          </div>
 
           {productChart.length > 0 ? (
 
             <ResponsiveContainer
               width="100%"
-              height={280}
+              height={300}
             >
 
               <BarChart
                 data={productChart}
                 margin={{
                   top: 10,
-                  right: 10,
+                  right: 15,
                   left: -15,
-                  bottom: 20,
+                  bottom: 25,
                 }}
               >
 
                 <CartesianGrid
                   strokeDasharray="3 3"
+                  stroke="#f0fdf4"
                 />
 
                 <XAxis
@@ -633,22 +738,30 @@ export default function Statistics() {
                   angle={-20}
                   textAnchor="end"
                   height={50}
+                  stroke="#9ca3af"
                 />
 
                 <YAxis
                   fontSize={11}
+                  stroke="#9ca3af"
                 />
 
                 <Tooltip
                   formatter={(value) =>
                     `${value} pcs`
                   }
+                  contentStyle={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: "1rem",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                    border: "1px solid #d1fae5",
+                  }}
                 />
 
                 <Bar
                   dataKey="qty"
-                  fill="#10b981"
-                  radius={[6, 6, 0, 0]}
+                  fill="#059669"
+                  radius={[8, 8, 0, 0]}
                 />
 
               </BarChart>
@@ -657,7 +770,7 @@ export default function Statistics() {
 
           ) : (
 
-            <div className="h-[280px] flex items-center justify-center text-gray-400">
+            <div className="h-[300px] flex items-center justify-center text-gray-400 text-sm font-medium">
 
               Belum ada data produk terjual
 

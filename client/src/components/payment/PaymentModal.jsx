@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, CreditCard, Banknote, CheckCircle, ArrowRight } from "lucide-react";
 import { useStore } from "../../context/StoreContext";
 
 const paymentMethods = [
@@ -38,226 +38,213 @@ export default function PaymentModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-emerald-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
     >
 
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-2xl w-[450px] max-w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl"
+        className="bg-gradient-to-b from-white via-white to-emerald-50/30 rounded-3xl w-[480px] max-w-full max-h-[92vh] overflow-y-auto p-6 sm:p-7 shadow-2xl border border-emerald-100 animate-scale-in"
+        style={{ boxShadow: "0 20px 50px rgba(0,0,0,0.15)" }}
       >
 
-        <div className="flex justify-between items-center mb-6">
-
-          <h2 className="text-2xl font-bold">
-            Pembayaran
-          </h2>
+        {/* Modal Header */}
+        <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
+              <CreditCard size={20} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-gray-900">
+                Penyelesaian Transaksi
+              </h2>
+              <p className="text-xs text-gray-400 font-medium">Pilih metode & konfirmasi bayar</p>
+            </div>
+          </div>
 
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-gray-100 transition"
-            aria-label="Tutup"
+            className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+            aria-label="Tutup Modal"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
-
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-5 pt-4">
 
-          <div>
-
-            <p className="text-gray-500 text-sm">
-              Total Belanja
-            </p>
-
-            <h1 className="text-3xl font-bold text-emerald-600 mt-1">
-              Rp{total.toLocaleString("id-ID")}
-            </h1>
-
+          {/* TOTAL BANNER */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-800 text-white shadow-md shadow-emerald-900/10 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-emerald-200 uppercase font-bold tracking-wider">
+                Total Tagihan Belanja
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-black text-white mt-0.5 tracking-tight">
+                Rp{total.toLocaleString("id-ID")}
+              </h1>
+            </div>
+            <div className="p-3 rounded-2xl bg-white/10 text-emerald-200">
+              <Banknote size={28} />
+            </div>
           </div>
 
-          {/* Metode Pembayaran */}
-
+          {/* METODE PEMBAYARAN TABS */}
           <div>
-
-            <label className="font-semibold text-sm text-gray-600">
-              Metode Pembayaran
+            <label className="font-extrabold text-xs uppercase tracking-wider text-gray-500 block mb-2">
+              Pilih Metode Pembayaran
             </label>
 
-            <div className="grid grid-cols-3 gap-2 mt-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              {paymentMethods.map((method) => {
+                const isSelected = paymentMethod === method;
 
-              {paymentMethods.map((method) => (
-
-                <button
-                  key={method}
-                  type="button"
-                  onClick={() => setPaymentMethod(method)}
-                  className={`py-2 rounded-xl text-sm border font-medium transition ${
-                    paymentMethod === method
-                      ? "bg-emerald-600 text-white border-emerald-600"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  {method}
-                </button>
-
-              ))}
-
+                return (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => setPaymentMethod(method)}
+                    className={`py-2.5 px-2 rounded-2xl text-xs font-bold transition-all ${
+                      isSelected
+                        ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 border-emerald-600 scale-102"
+                        : "bg-gray-50 text-gray-700 border border-gray-200/80 hover:bg-emerald-50 hover:text-emerald-700"
+                    }`}
+                  >
+                    {method}
+                  </button>
+                );
+              })}
             </div>
-
           </div>
 
           {isCash ? (
-
-            <>
-
+            <div className="space-y-3">
               <div>
-
-                <label className="font-semibold text-sm text-gray-600 block mb-1">
-                  Uang Pelanggan
+                <label className="font-extrabold text-xs uppercase tracking-wider text-gray-500 block mb-1.5">
+                  Nominal Uang Diterima
                 </label>
 
-                <input
-                  type="number"
-                  placeholder="Masukkan nominal uang..."
-                  value={money}
-                  onChange={(e) => setMoney(e.target.value)}
-                  className="w-full border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  autoFocus
-                />
-
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400 text-sm">
+                    Rp
+                  </span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={money}
+                    onChange={(e) => setMoney(e.target.value)}
+                    className="
+                      w-full
+                      pl-11
+                      pr-4
+                      py-3.5
+                      bg-gray-50/80
+                      border
+                      border-gray-200
+                      rounded-2xl
+                      text-lg
+                      font-black
+                      text-gray-900
+                      focus:outline-none
+                      focus:bg-white
+                      focus:border-emerald-500
+                      focus:ring-4
+                      focus:ring-emerald-500/10
+                      transition-all
+                    "
+                    autoFocus
+                  />
+                </div>
               </div>
 
-              {/* Tombol Nominal Cepat */}
-
-              <div className="grid grid-cols-5 gap-2">
-
+              {/* QUICK NOMINAL BUTTONS */}
+              <div className="grid grid-cols-5 gap-1.5">
                 <button
                   type="button"
                   onClick={() => setMoney(String(total))}
-                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded-lg py-2 text-xs transition border border-emerald-200"
+                  className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-extrabold rounded-xl py-2 text-xs transition border border-emerald-200"
                 >
                   Uang Pas
                 </button>
 
                 {[10000, 20000, 50000, 100000].map((nominal) => (
-
                   <button
                     key={nominal}
                     type="button"
                     onClick={() => setMoney(String(nominal))}
-                    className="bg-gray-100 hover:bg-gray-200 rounded-lg py-2 text-xs font-medium transition"
+                    className="bg-gray-100 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl py-2 text-xs font-bold text-gray-700 transition border border-gray-200/60"
                   >
-                    {nominal >= 1000
-                      ? `${nominal / 1000}K`
-                      : nominal}
+                    {nominal >= 1000 ? `${nominal / 1000}K` : nominal}
                   </button>
-
                 ))}
-
               </div>
-
-            </>
-
-          ) : (
-
-            <div className="border rounded-xl p-4 bg-emerald-50 text-emerald-700 text-sm">
-              Pembayaran via <strong>{paymentMethod}</strong> otomatis tercatat lunas sesuai total belanja (Rp{total.toLocaleString("id-ID")}).
             </div>
-
+          ) : (
+            <div className="rounded-2xl p-4 bg-emerald-50/80 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-medium flex items-center gap-3">
+              <CheckCircle size={20} className="text-emerald-600 shrink-0" />
+              <span>
+                Pembayaran non-tunai via <strong>{paymentMethod}</strong> otomatis diverifikasi lunas (<strong>Rp{total.toLocaleString("id-ID")}</strong>).
+              </span>
+            </div>
           )}
 
-          {/* Ringkasan */}
-
-          <div className="border rounded-xl p-4 space-y-3 bg-gray-50/50">
-
+          {/* CALCULATION SUMMARY */}
+          <div className="rounded-2xl p-4 bg-gray-50/90 border border-gray-200/70 space-y-2 text-xs sm:text-sm">
             {discountAmount > 0 && (
-
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>Subtotal</span>
+              <div className="flex justify-between text-gray-500">
+                <span>Subtotal Awal</span>
                 <span>Rp{subtotal.toLocaleString("id-ID")}</span>
               </div>
-
             )}
 
             {discountAmount > 0 && (
-
-              <div className="flex justify-between text-sm text-gray-500">
+              <div className="flex justify-between text-rose-600 font-medium">
                 <span>Diskon</span>
-                <span className="text-red-500">
-                  -Rp{discountAmount.toLocaleString("id-ID")}
-                </span>
+                <span>-Rp{discountAmount.toLocaleString("id-ID")}</span>
               </div>
-
             )}
 
             {taxAmount > 0 && (
-
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>Pajak</span>
+              <div className="flex justify-between text-gray-500">
+                <span>Pajak Transaksi</span>
                 <span>Rp{taxAmount.toLocaleString("id-ID")}</span>
               </div>
-
             )}
 
-            <div className="flex justify-between text-base font-semibold">
-
-              <span>Total</span>
-
-              <span>
-                Rp{total.toLocaleString("id-ID")}
-              </span>
-
+            <div className="flex justify-between font-extrabold text-gray-800 pt-1">
+              <span>Total Bersih</span>
+              <span className="text-emerald-700">Rp{total.toLocaleString("id-ID")}</span>
             </div>
 
-            <div className="flex justify-between text-sm text-gray-600">
-
-              <span>Dibayar</span>
-
-              <span className="font-semibold">
+            <div className="flex justify-between text-gray-500">
+              <span>Jumlah Dibayar</span>
+              <span className="font-bold text-gray-900">
                 Rp{paid.toLocaleString("id-ID")}
               </span>
-
             </div>
 
-            <hr />
-
-            <div className="flex justify-between text-lg font-bold">
-
+            <div className="pt-2 border-t border-gray-200 flex justify-between font-black text-base">
               <span>Kembalian</span>
-
-              <span
-                className={
-                  change >= 0
-                    ? "text-emerald-600"
-                    : "text-red-600"
-                }
-              >
+              <span className={change >= 0 ? "text-emerald-700" : "text-rose-600"}>
                 {isCash && paid === 0
                   ? "-"
                   : `Rp${Math.max(0, change).toLocaleString("id-ID")}`}
               </span>
-
             </div>
 
             {isCash && paid > 0 && paid < total && (
-
-              <p className="text-red-500 text-xs font-medium">
-                Uang pelanggan masih kurang Rp{(total - paid).toLocaleString("id-ID")}.
+              <p className="text-rose-600 text-xs font-bold text-right pt-1">
+                Kurang: Rp{(total - paid).toLocaleString("id-ID")}
               </p>
-
             )}
-
           </div>
 
         </div>
 
-        <div className="flex justify-end gap-3 mt-8">
-
+        {/* MODAL FOOTER */}
+        <div className="flex justify-end gap-3 mt-7 pt-4 border-t border-gray-100">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-gray-200 hover:bg-gray-300 transition font-medium text-gray-700"
+            className="px-5 py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 transition font-bold text-xs sm:text-sm text-gray-600"
           >
             Batal
           </button>
@@ -266,23 +253,21 @@ export default function PaymentModal({
             type="button"
             disabled={!canPay}
             onClick={() => {
-
               onPay({
                 paymentMethod,
                 paid,
                 change: Math.max(0, change),
               });
-
             }}
-            className={`px-5 py-2.5 rounded-xl text-white font-semibold transition ${
+            className={`px-6 py-3 rounded-2xl text-white font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all active:scale-95 ${
               canPay
-                ? "bg-emerald-600 hover:bg-emerald-700 shadow-sm"
-                : "bg-gray-400 cursor-not-allowed"
+                ? "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-md shadow-emerald-600/25"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
           >
-            Bayar
+            <span>Proses Bayar</span>
+            <ArrowRight size={15} />
           </button>
-
         </div>
 
       </div>

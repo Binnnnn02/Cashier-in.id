@@ -8,6 +8,8 @@ import {
   Package,
   FileDown,
   FileSpreadsheet,
+  Filter,
+  ArrowUpDown,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -283,86 +285,100 @@ export default function Product() {
 
   return (
 
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in">
 
 
       {/* =========================
-          HEADER
+          HEADER & ACTIONS
       ========================= */}
 
       <div
         className="
           flex
           flex-col
-          sm:flex-row
-          sm:items-center
-          sm:justify-between
+          md:flex-row
+          md:items-center
+          md:justify-between
           gap-4
         "
       >
 
         <div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Produk
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+            Katalog Produk
           </h1>
 
-          <p className="text-sm sm:text-base text-gray-500 mt-1">
-            Kelola seluruh produk kasir.
+          <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1">
+            Kelola inventaris, sesuaikan harga jual, dan pantau ketersediaan stok produk.
           </p>
 
         </div>
 
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
 
           <button
             onClick={downloadPDF}
             className="
-              w-full
-              sm:w-auto
-              justify-center
-              bg-red-600
-              hover:bg-red-700
-              text-white
-              px-5
-              py-3
-              rounded-xl
+              flex-1
+              sm:flex-none
+              bg-white
+              hover:bg-rose-50
+              text-rose-700
+              border
+              border-rose-200
+              px-4
+              py-2.5
+              rounded-2xl
               flex
               items-center
+              justify-center
               gap-2
-              transition
+              text-xs
+              sm:text-sm
+              font-bold
+              shadow-sm
+              transition-all
+              active:scale-95
             "
           >
 
-            <FileDown size={18} />
+            <FileDown size={16} />
 
-            Export PDF
+            <span>Export PDF</span>
 
           </button>
 
           <button
             onClick={downloadExcel}
             className="
-              w-full
-              sm:w-auto
-              justify-center
-              bg-green-600
-              hover:bg-green-700
-              text-white
-              px-5
-              py-3
-              rounded-xl
+              flex-1
+              sm:flex-none
+              bg-white
+              hover:bg-emerald-50
+              text-emerald-700
+              border
+              border-emerald-200
+              px-4
+              py-2.5
+              rounded-2xl
               flex
               items-center
+              justify-center
               gap-2
-              transition
+              text-xs
+              sm:text-sm
+              font-bold
+              shadow-sm
+              transition-all
+              active:scale-95
             "
           >
 
-            <FileSpreadsheet size={18} />
+            <FileSpreadsheet size={16} />
 
-            Export Excel
+            <span>Export Excel</span>
 
           </button>
 
@@ -373,23 +389,35 @@ export default function Product() {
             className="
               w-full
               sm:w-auto
-              justify-center
-              bg-emerald-600
-              hover:bg-emerald-700
+              bg-gradient-to-r
+              from-emerald-600
+              via-emerald-600
+              to-emerald-700
+              hover:from-emerald-700
+              hover:to-emerald-800
               text-white
               px-5
-              py-3
-              rounded-xl
+              py-2.5
+              rounded-2xl
               flex
               items-center
+              justify-center
               gap-2
-              transition
+              text-xs
+              sm:text-sm
+              font-extrabold
+              shadow-md
+              shadow-emerald-600/20
+              hover:shadow-lg
+              hover:shadow-emerald-600/30
+              transition-all
+              active:scale-95
             "
           >
 
-            <Plus size={20} />
+            <Plus size={18} className="stroke-[3]" />
 
-            Tambah Produk
+            <span>Tambah Produk</span>
 
           </button>
 
@@ -399,14 +427,19 @@ export default function Product() {
 
 
       {/* =========================
-          SEARCH & FILTER
+          SEARCH & FILTER BAR
       ========================= */}
 
       <div
         className="
-          bg-white
-          rounded-2xl
+          bg-gradient-to-b
+          from-white
+          via-white
+          to-emerald-50/30
+          rounded-3xl
           shadow-sm
+          border
+          border-emerald-100/70
           p-4
           sm:p-5
           flex
@@ -416,6 +449,7 @@ export default function Product() {
           lg:justify-between
           gap-4
         "
+        style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.02)" }}
       >
 
         <div
@@ -423,6 +457,8 @@ export default function Product() {
             flex
             flex-col
             sm:flex-row
+            items-stretch
+            sm:items-center
             gap-3
             w-full
             lg:w-auto
@@ -432,13 +468,13 @@ export default function Product() {
 
           {/* Search */}
 
-          <div className="relative w-full sm:w-72">
+          <div className="relative w-full sm:w-80">
 
             <Search
               size={18}
               className="
                 absolute
-                left-3
+                left-3.5
                 top-1/2
                 -translate-y-1/2
                 text-gray-400
@@ -447,7 +483,7 @@ export default function Product() {
 
             <input
               type="text"
-              placeholder="Cari produk..."
+              placeholder="Cari nama produk..."
               value={search}
               onChange={(e) =>
                 setSearch(e.target.value)
@@ -456,126 +492,173 @@ export default function Product() {
                 w-full
                 pl-10
                 pr-4
-                py-3
+                py-2.5
+                text-sm
+                bg-gray-50/80
                 border
-                rounded-xl
+                border-gray-200
+                rounded-2xl
                 focus:outline-none
-                focus:ring-2
-                focus:ring-emerald-500
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
               "
             />
 
           </div>
 
 
-          {/* Category */}
+          {/* Category Dropdown */}
 
-          <select
-            value={categoryFilter}
-            onChange={(e) =>
-              setCategoryFilter(
-                e.target.value
-              )
-            }
-            className="
-              w-full
-              sm:w-auto
-              border
-              rounded-xl
-              px-4
-              py-3
-              focus:outline-none
-              focus:ring-2
-              focus:ring-emerald-500
-            "
-          >
+          <div className="relative">
 
-            {categories.map(
-              (category) => (
+            <select
+              value={categoryFilter}
+              onChange={(e) =>
+                setCategoryFilter(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+                sm:w-auto
+                appearance-none
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                pl-4
+                pr-9
+                py-2.5
+                text-sm
+                font-semibold
+                text-gray-700
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+                cursor-pointer
+              "
+            >
 
-                <option
-                  key={category}
-                  value={category}
-                >
+              {categories.map(
+                (category) => (
 
-                  {category}
+                  <option
+                    key={category}
+                    value={category}
+                  >
 
-                </option>
+                    {category === "Semua" ? "Semua Kategori" : category}
 
-              )
-            )}
+                  </option>
 
-          </select>
+                )
+              )}
+
+            </select>
+
+            <Filter size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+
+          </div>
 
 
-          {/* Sort */}
+          {/* Sort Dropdown */}
 
-          <select
-            value={sortBy}
-            onChange={(e) =>
-              setSortBy(
-                e.target.value
-              )
-            }
-            className="
-              w-full
-              sm:w-auto
-              border
-              rounded-xl
-              px-4
-              py-3
-              focus:outline-none
-              focus:ring-2
-              focus:ring-emerald-500
-            "
-          >
+          <div className="relative">
 
-            <option value="default">
-              Urutkan
-            </option>
+            <select
+              value={sortBy}
+              onChange={(e) =>
+                setSortBy(
+                  e.target.value
+                )
+              }
+              className="
+                w-full
+                sm:w-auto
+                appearance-none
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                pl-4
+                pr-9
+                py-2.5
+                text-sm
+                font-semibold
+                text-gray-700
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+                cursor-pointer
+              "
+            >
 
-            <option value="priceAsc">
-              Harga Terendah
-            </option>
+              <option value="default">
+                Urutan Standar
+              </option>
 
-            <option value="priceDesc">
-              Harga Tertinggi
-            </option>
+              <option value="priceAsc">
+                Harga: Termurah
+              </option>
 
-            <option value="stockAsc">
-              Stok Terendah
-            </option>
+              <option value="priceDesc">
+                Harga: Termahal
+              </option>
 
-            <option value="stockDesc">
-              Stok Tertinggi
-            </option>
+              <option value="stockAsc">
+                Stok: Paling Sedikit
+              </option>
 
-          </select>
+              <option value="stockDesc">
+                Stok: Paling Banyak
+              </option>
+
+            </select>
+
+            <ArrowUpDown size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+
+          </div>
 
         </div>
 
 
-        {/* Total */}
+        {/* Total Badge */}
 
         <div
           className="
             flex
             items-center
             gap-2
-            text-gray-500
-            font-medium
+            text-emerald-800
+            bg-emerald-100/70
+            px-4
+            py-2
+            rounded-2xl
+            font-bold
+            text-xs
+            sm:text-sm
             whitespace-nowrap
+            self-start
+            lg:self-auto
           "
         >
 
           <Package
-            size={18}
-            className="text-emerald-600"
+            size={16}
+            className="text-emerald-700"
           />
 
           <span>
-            {sortedProducts.length} dari{" "}
-            {products.length} Produk
+            {sortedProducts.length} dari {products.length} Produk
           </span>
 
         </div>
@@ -644,43 +727,46 @@ export default function Product() {
 
 
       {/* =========================
-          TABLE
+          TABLE CONTAINER
       ========================= */}
 
       <div
         className="
           bg-white
-          rounded-2xl
+          rounded-3xl
           shadow-sm
+          border
+          border-emerald-100/70
           overflow-hidden
         "
+        style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}
       >
 
         <div className="overflow-x-auto">
 
           <table className="w-full min-w-[700px]">
 
-            <thead className="bg-emerald-600 text-white">
+            <thead className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-800 text-white">
 
               <tr>
 
-                <th className="text-left px-4 sm:px-6 py-4">
+                <th className="text-left px-5 sm:px-7 py-4 text-xs font-bold uppercase tracking-wider">
                   Nama Produk
                 </th>
 
-                <th className="text-left px-4 sm:px-6 py-4">
+                <th className="text-left px-5 sm:px-7 py-4 text-xs font-bold uppercase tracking-wider">
                   Kategori
                 </th>
 
-                <th className="text-left px-4 sm:px-6 py-4">
-                  Harga
+                <th className="text-left px-5 sm:px-7 py-4 text-xs font-bold uppercase tracking-wider">
+                  Harga Satuan
                 </th>
 
-                <th className="text-left px-4 sm:px-6 py-4">
-                  Stok
+                <th className="text-left px-5 sm:px-7 py-4 text-xs font-bold uppercase tracking-wider">
+                  Status Stok
                 </th>
 
-                <th className="text-center px-4 sm:px-6 py-4">
+                <th className="text-center px-5 sm:px-7 py-4 text-xs font-bold uppercase tracking-wider">
                   Aksi
                 </th>
 
@@ -689,196 +775,221 @@ export default function Product() {
             </thead>
 
 
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
 
               {sortedProducts.length > 0 ? (
 
                 sortedProducts.map(
-                  (product) => (
+                  (product) => {
+                    const stockNum = Number(product.stock);
+                    const isZero = stockNum === 0;
+                    const isLow = stockNum > 0 && stockNum <= 5;
 
-                    <tr
-                      key={product.id}
-                      className="
-                        border-b
-                        hover:bg-gray-50
-                        transition
-                      "
-                    >
+                    return (
+                      <tr
+                        key={product.id}
+                        className="
+                          hover:bg-emerald-50/30
+                          transition-colors
+                        "
+                      >
 
-                      {/* Nama */}
+                        {/* Nama & Foto */}
 
-                      <td className="px-4 sm:px-6 py-4">
+                        <td className="px-5 sm:px-7 py-4">
 
-                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3.5">
 
-                          <div
-                            className="
-                              w-10
-                              h-10
-                              shrink-0
-                              bg-emerald-50
-                              rounded-xl
-                              flex
-                              items-center
-                              justify-center
-                              text-xl
-                            "
-                          >
+                            <div
+                              className="
+                                w-11
+                                h-11
+                                shrink-0
+                                bg-gradient-to-br
+                                from-emerald-50
+                                to-slate-100
+                                border
+                                border-emerald-100
+                                rounded-2xl
+                                flex
+                                items-center
+                                justify-center
+                                text-2xl
+                                shadow-inner
+                                overflow-hidden
+                              "
+                            >
 
-                            {product.image ? (
+                              {product.image ? (
 
-                              <img
-                                src={product.image}
-                                alt={product.name}
-                                className="
-                                  w-full
-                                  h-full
-                                  object-cover
-                                  rounded-xl
-                                "
-                              />
+                                <img
+                                  src={product.image}
+                                  alt={product.name}
+                                  className="
+                                    w-full
+                                    h-full
+                                    object-cover
+                                  "
+                                />
 
-                            ) : (
+                              ) : (
 
-                              product.emoji || "📦"
+                                product.emoji || "📦"
 
-                            )}
+                              )}
+
+                            </div>
+
+
+                            <div>
+                              <p className="font-extrabold text-gray-900 text-sm">
+                                {product.name}
+                              </p>
+                              <p className="text-xs text-gray-400 font-medium mt-0.5">
+                                ID: #{product.id}
+                              </p>
+                            </div>
 
                           </div>
 
+                        </td>
 
-                          <span className="font-medium">
 
-                            {product.name}
+                        {/* Kategori */}
+
+                        <td className="px-5 sm:px-7 py-4">
+
+                          <span
+                            className="
+                              inline-flex
+                              items-center
+                              bg-emerald-50
+                              text-emerald-800
+                              border
+                              border-emerald-200/60
+                              px-3
+                              py-1
+                              rounded-full
+                              text-xs
+                              font-bold
+                              whitespace-nowrap
+                            "
+                          >
+
+                            {product.category || "Umum"}
 
                           </span>
 
-                        </div>
-
-                      </td>
+                        </td>
 
 
-                      {/* Kategori */}
+                        {/* Harga */}
 
-                      <td className="px-4 sm:px-6 py-4">
+                        <td className="px-5 sm:px-7 py-4 font-black text-gray-900 text-sm whitespace-nowrap">
 
-                        <span
-                          className="
-                            bg-emerald-50
-                            text-emerald-700
-                            px-3
-                            py-1
-                            rounded-full
-                            text-sm
-                            whitespace-nowrap
-                          "
-                        >
+                          Rp{Number(
+                            product.price
+                          ).toLocaleString(
+                            "id-ID"
+                          )}
 
-                          {product.category}
-
-                        </span>
-
-                      </td>
+                        </td>
 
 
-                      {/* Harga */}
+                        {/* Stok */}
 
-                      <td className="px-4 sm:px-6 py-4 font-medium whitespace-nowrap">
+                        <td className="px-5 sm:px-7 py-4">
 
-                        Rp
-                        {Number(
-                          product.price
-                        ).toLocaleString(
-                          "id-ID"
-                        )}
-
-                      </td>
-
-
-                      {/* Stok */}
-
-                      <td className="px-4 sm:px-6 py-4">
-
-                        <span
-                          className={`
-                            px-3
-                            py-1
-                            rounded-full
-                            text-sm
-                            font-medium
-                            ${
-                              Number(product.stock) === 0
-                                ? "bg-red-100 text-red-600"
-                                : Number(product.stock) <= 5
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-emerald-100 text-emerald-700"
-                            }
-                          `}
-                        >
-
-                          {product.stock} pcs
-
-                        </span>
-
-                      </td>
-
-
-                      {/* Aksi */}
-
-                      <td className="px-4 sm:px-6 py-4">
-
-                        <div className="flex justify-center gap-2">
-
-                          <button
-                            onClick={() =>
-                              setEditProduct(
-                                product
-                              )
-                            }
-                            className="
-                              bg-blue-500
-                              hover:bg-blue-600
-                              text-white
-                              p-2
-                              rounded-lg
-                              transition
-                            "
-                            title="Edit Produk"
+                          <span
+                            className={`
+                              inline-flex
+                              items-center
+                              gap-1.5
+                              px-3
+                              py-1
+                              rounded-full
+                              text-xs
+                              font-bold
+                              ${
+                                isZero
+                                  ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                  : isLow
+                                  ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                  : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              }
+                            `}
                           >
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              isZero ? "bg-rose-500" : isLow ? "bg-amber-500" : "bg-emerald-500"
+                            }`} />
+                            {product.stock} pcs ({getStockStatus(product.stock)})
+                          </span>
 
-                            <Pencil size={18} />
-
-                          </button>
+                        </td>
 
 
-                          <button
-                            onClick={() =>
-                              setDeleteProductId(
-                                product.id
-                              )
-                            }
-                            className="
-                              bg-red-500
-                              hover:bg-red-600
-                              text-white
-                              p-2
-                              rounded-lg
-                              transition
-                            "
-                            title="Hapus Produk"
-                          >
+                        {/* Aksi */}
 
-                            <Trash2 size={18} />
+                        <td className="px-5 sm:px-7 py-4">
 
-                          </button>
+                          <div className="flex items-center justify-center gap-2">
 
-                        </div>
+                            <button
+                              onClick={() =>
+                                setEditProduct(
+                                  product
+                                )
+                              }
+                              className="
+                                p-2.5
+                                rounded-xl
+                                bg-emerald-50
+                                hover:bg-emerald-100
+                                text-emerald-700
+                                border
+                                border-emerald-200/80
+                                transition-all
+                                active:scale-90
+                              "
+                              title="Edit Produk"
+                            >
 
-                      </td>
+                              <Pencil size={16} />
 
-                    </tr>
+                            </button>
 
-                  )
+
+                            <button
+                              onClick={() =>
+                                setDeleteProductId(
+                                  product.id
+                                )
+                              }
+                              className="
+                                p-2.5
+                                rounded-xl
+                                bg-rose-50
+                                hover:bg-rose-100
+                                text-rose-700
+                                border
+                                border-rose-200/80
+                                transition-all
+                                active:scale-90
+                              "
+                              title="Hapus Produk"
+                            >
+
+                              <Trash2 size={16} />
+
+                            </button>
+
+                          </div>
+
+                        </td>
+
+                      </tr>
+                    );
+                  }
                 )
 
               ) : (
@@ -890,10 +1001,12 @@ export default function Product() {
                     className="
                       py-16
                       text-center
-                      text-gray-500
+                      text-gray-400
+                      font-medium
                     "
                   >
 
+                    <Package size={36} className="mx-auto text-gray-300 mb-2" />
                     Produk tidak ditemukan.
 
                   </td>

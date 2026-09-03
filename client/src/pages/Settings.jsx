@@ -12,6 +12,7 @@ import {
   Download,
   RotateCcw,
   Save,
+  Check,
 } from "lucide-react";
 
 function SettingsForm({ store, updateStore, products, history, resetAllData }) {
@@ -80,7 +81,7 @@ function SettingsForm({ store, updateStore, products, history, resetAllData }) {
 
     }
 
-    toast.success("Pengaturan berhasil disimpan");
+    toast.success("Pengaturan toko berhasil diperbarui!");
 
   };
 
@@ -116,13 +117,13 @@ function SettingsForm({ store, updateStore, products, history, resetAllData }) {
 
     a.href = url;
 
-    a.download = "backup-kasir.json";
+    a.download = `backup-kasir-${new Date().toISOString().slice(0, 10)}.json`;
 
     a.click();
 
     URL.revokeObjectURL(url);
 
-    toast.success("Backup berhasil diunduh");
+    toast.success("File backup berhasil diunduh");
 
   };
 
@@ -156,423 +157,644 @@ function SettingsForm({ store, updateStore, products, history, resetAllData }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in max-w-5xl">
 
-      <div>
-        <h1 className="text-3xl font-bold">
-          Pengaturan
-        </h1>
-
-        <p className="text-gray-500 mt-1">
-          Kelola informasi toko dan sistem aplikasi.
-        </p>
-      </div>
-
-            {/* Informasi Toko */}
-
-      <div className="bg-white rounded-2xl shadow-sm p-6">
-
-        <div className="flex items-center gap-3 mb-6">
-
-          <Store className="text-emerald-600" />
-
-          <h2 className="text-xl font-bold">
-            Informasi Toko
-          </h2>
-
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+            Pengaturan Toko
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1">
+            Konfigurasi identitas toko, format struk, sistem notifikasi, dan pencadangan.
+          </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-5">
+        <button
+          onClick={saveSettings}
+          disabled={saving}
+          className="
+            self-start
+            md:self-auto
+            bg-gradient-to-r
+            from-emerald-600
+            via-emerald-600
+            to-emerald-700
+            hover:from-emerald-700
+            hover:to-emerald-800
+            text-white
+            px-6
+            py-3
+            rounded-2xl
+            font-extrabold
+            text-sm
+            shadow-md
+            shadow-emerald-600/20
+            hover:shadow-lg
+            hover:shadow-emerald-600/30
+            flex
+            items-center
+            gap-2
+            transition-all
+            active:scale-95
+            disabled:opacity-60
+          "
+        >
+          <Save size={18} />
+          <span>{saving ? "Menyimpan..." : "Simpan Pengaturan"}</span>
+        </button>
+      </div>
+
+
+      {/* ======================================================
+          1. INFORMASI TOKO
+      ====================================================== */}
+      <div
+        className="
+          bg-gradient-to-b
+          from-white
+          via-white
+          to-emerald-50/20
+          rounded-3xl
+          p-6
+          sm:p-8
+          border
+          border-emerald-100/70
+          shadow-sm
+        "
+      >
+
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+          <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700">
+            <Store size={22} className="stroke-[2.5]" />
+          </div>
+          <div>
+            <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">
+              Informasi Toko
+            </h2>
+            <p className="text-xs text-gray-400 font-medium">
+              Data ini akan tercetak di bagian atas struk belanja
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
           <div>
-
-            <label className="text-sm text-gray-500">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
               Nama Toko
             </label>
-
             <input
               type="text"
               value={storeName}
-              onChange={(e) =>
-                setStoreName(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-1"
+              onChange={(e) => setStoreName(e.target.value)}
+              className="
+                w-full
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                p-3.5
+                text-sm
+                font-medium
+                text-gray-800
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+              "
+              placeholder="Nama Toko Anda"
             />
-
           </div>
 
           <div>
-
-            <label className="text-sm text-gray-500">
-              Nama Pemilik
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+              Nama Pemilik / Kasir Utama
             </label>
-
             <input
               type="text"
               value={owner}
-              onChange={(e) =>
-                setOwner(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-1"
+              onChange={(e) => setOwner(e.target.value)}
+              className="
+                w-full
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                p-3.5
+                text-sm
+                font-medium
+                text-gray-800
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+              "
+              placeholder="Nama Pemilik"
             />
-
           </div>
 
           <div>
-
-            <label className="text-sm text-gray-500">
-              Nomor HP
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+              Nomor Telepon / WhatsApp
             </label>
-
             <input
               type="text"
               value={phone}
-              onChange={(e) =>
-                setPhone(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-1"
+              onChange={(e) => setPhone(e.target.value)}
+              className="
+                w-full
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                p-3.5
+                text-sm
+                font-medium
+                text-gray-800
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+              "
+              placeholder="081234567890"
             />
-
           </div>
 
           <div>
-
-            <label className="text-sm text-gray-500">
-              Alamat
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+              Alamat Toko
             </label>
-
             <input
               type="text"
               value={address}
-              onChange={(e) =>
-                setAddress(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-1"
+              onChange={(e) => setAddress(e.target.value)}
+              className="
+                w-full
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                p-3.5
+                text-sm
+                font-medium
+                text-gray-800
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+              "
+              placeholder="Jl. Mawar No. 123"
             />
-
           </div>
 
         </div>
 
       </div>
 
-      {/* Pengaturan Struk */}
 
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      {/* ======================================================
+          2. PENGATURAN STRUK & PAJAK
+      ====================================================== */}
+      <div
+        className="
+          bg-gradient-to-b
+          from-white
+          via-white
+          to-emerald-50/20
+          rounded-3xl
+          p-6
+          sm:p-8
+          border
+          border-emerald-100/70
+          shadow-sm
+        "
+      >
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+          <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700">
+            <Receipt size={22} className="stroke-[2.5]" />
+          </div>
+          <div>
+            <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">
+              Pengaturan Struk Belanja
+            </h2>
+            <p className="text-xs text-gray-400 font-medium">
+              Sesuaikan elemen yang tampil pada struk digital & kertas thermal
+            </p>
+          </div>
+        </div>
 
-          <Receipt className="text-emerald-600" />
+        {/* Toggles */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
 
-          <h2 className="text-xl font-bold">
-            Pengaturan Struk
-          </h2>
+          {[
+            { label: "Tampilkan Logo Toko", val: showLogo, set: () => setShowLogo(!showLogo) },
+            { label: "Tampilkan Alamat Toko", val: showAddress, set: () => setShowAddress(!showAddress) },
+            { label: "Tampilkan Nomor HP", val: showPhone, set: () => setShowPhone(!showPhone) },
+            { label: "Tampilkan Pajak Transaksi", val: showTax, set: () => setShowTax(!showTax) },
+          ].map((toggle, idx) => (
+            <label
+              key={idx}
+              className="
+                flex
+                items-center
+                justify-between
+                p-4
+                rounded-2xl
+                bg-gray-50/80
+                border
+                border-gray-200/80
+                hover:border-emerald-300
+                cursor-pointer
+                transition-all
+              "
+            >
+              <span className="text-sm font-bold text-gray-800">{toggle.label}</span>
+              <input
+                type="checkbox"
+                checked={toggle.val}
+                onChange={toggle.set}
+                className="w-5 h-5 rounded-lg text-emerald-600 focus:ring-emerald-500 border-gray-300 cursor-pointer accent-emerald-600"
+              />
+            </label>
+          ))}
 
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
-
-          <label className="flex items-center gap-3">
-
-            <input
-              type="checkbox"
-              checked={showLogo}
-              onChange={() =>
-                setShowLogo(!showLogo)
-              }
-            />
-
-            Tampilkan Logo
-
-          </label>
-
-          <label className="flex items-center gap-3">
-
-            <input
-              type="checkbox"
-              checked={showAddress}
-              onChange={() =>
-                setShowAddress(!showAddress)
-              }
-            />
-
-            Tampilkan Alamat
-
-          </label>
-
-          <label className="flex items-center gap-3">
-
-            <input
-              type="checkbox"
-              checked={showPhone}
-              onChange={() =>
-                setShowPhone(!showPhone)
-              }
-            />
-
-            Tampilkan Nomor HP
-
-          </label>
-
-          <label className="flex items-center gap-3">
-
-            <input
-              type="checkbox"
-              checked={showTax}
-              onChange={() =>
-                setShowTax(!showTax)
-              }
-            />
-
-            Tampilkan Pajak
-
-          </label>
-
-        </div>
-
-        <div className="grid grid-cols-2 gap-5 mt-6">
+        {/* Tax & Discount Numbers */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
 
           <div>
-
-            <label className="text-sm text-gray-500">
-              Pajak (%)
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+              Pajak Transaksi (%)
             </label>
-
             <input
               type="number"
+              min="0"
               value={tax}
-              onChange={(e) =>
-                setTax(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-1"
+              onChange={(e) => setTax(e.target.value)}
+              className="
+                w-full
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                p-3.5
+                text-sm
+                font-medium
+                text-gray-800
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+              "
+              placeholder="0"
             />
-
           </div>
 
           <div>
-
-            <label className="text-sm text-gray-500">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
               Diskon Default (%)
             </label>
-
             <input
               type="number"
+              min="0"
               value={discount}
-              onChange={(e) =>
-                setDiscount(e.target.value)
-              }
-              className="w-full border rounded-xl p-3 mt-1"
+              onChange={(e) => setDiscount(e.target.value)}
+              className="
+                w-full
+                bg-gray-50/80
+                border
+                border-gray-200
+                rounded-2xl
+                p-3.5
+                text-sm
+                font-medium
+                text-gray-800
+                focus:outline-none
+                focus:bg-white
+                focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+                transition-all
+              "
+              placeholder="0"
             />
-
           </div>
 
         </div>
 
-        <div className="mt-6">
-
-          <label className="text-sm text-gray-500">
-            Footer Struk
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
+            Catatan Footer Struk
           </label>
-
           <textarea
-            rows={4}
+            rows={3}
             value={footer}
-            onChange={(e) =>
-              setFooter(e.target.value)
-            }
-            className="w-full border rounded-xl p-3 mt-1 resize-none"
+            onChange={(e) => setFooter(e.target.value)}
+            className="
+              w-full
+              bg-gray-50/80
+              border
+              border-gray-200
+              rounded-2xl
+              p-3.5
+              text-sm
+              font-medium
+              text-gray-800
+              focus:outline-none
+              focus:bg-white
+              focus:border-emerald-500
+              focus:ring-4
+              focus:ring-emerald-500/10
+              transition-all
+              resize-none
+            "
+            placeholder="Terima kasih telah berbelanja!"
           />
-
         </div>
 
       </div>
 
-            {/* Pembayaran */}
 
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      {/* ======================================================
+          3. METODE PEMBAYARAN & NOTIFIKASI
+      ====================================================== */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <div className="flex items-center gap-3 mb-6">
-
-          <CreditCard className="text-emerald-600" />
-
-          <h2 className="text-xl font-bold">
-            Pembayaran
-          </h2>
-
-        </div>
-
-        <select
-          value={paymentMethod}
-          onChange={(e) =>
-            setPaymentMethod(e.target.value)
-          }
-          className="w-full border rounded-xl p-3"
+        {/* Pembayaran */}
+        <div
+          className="
+            bg-gradient-to-b
+            from-white
+            via-white
+            to-emerald-50/20
+            rounded-3xl
+            p-6
+            sm:p-8
+            border
+            border-emerald-100/70
+            shadow-sm
+          "
         >
-          <option>Tunai</option>
-          <option>QRIS</option>
-          <option>Transfer</option>
-          <option>Debit</option>
-          <option>E-Wallet</option>
-        </select>
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+            <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700">
+              <CreditCard size={22} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold text-gray-900">
+                Default Pembayaran
+              </h2>
+              <p className="text-xs text-gray-400 font-medium">
+                Metode bayar yang otomatis terpilih
+              </p>
+            </div>
+          </div>
+
+          <select
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+            className="
+              w-full
+              bg-gray-50/80
+              border
+              border-gray-200
+              rounded-2xl
+              p-3.5
+              text-sm
+              font-bold
+              text-gray-800
+              focus:outline-none
+              focus:bg-white
+              focus:border-emerald-500
+              focus:ring-4
+              focus:ring-emerald-500/10
+              cursor-pointer
+            "
+          >
+            <option>Tunai</option>
+            <option>QRIS</option>
+            <option>Transfer</option>
+            <option>Debit</option>
+            <option>E-Wallet</option>
+          </select>
+        </div>
+
+        {/* Notifikasi */}
+        <div
+          className="
+            bg-gradient-to-b
+            from-white
+            via-white
+            to-emerald-50/20
+            rounded-3xl
+            p-6
+            sm:p-8
+            border
+            border-emerald-100/70
+            shadow-sm
+          "
+        >
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+            <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700">
+              <Bell size={22} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold text-gray-900">
+                Preferensi Sistem
+              </h2>
+              <p className="text-xs text-gray-400 font-medium">
+                Suara dan otomatisasi pencetakan
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {[
+              { label: "Peringatan stok menipis", val: stockNotif, set: () => setStockNotif(!stockNotif) },
+              { label: "Suara kasir saat sukses bayar", val: soundNotif, set: () => setSoundNotif(!soundNotif) },
+              { label: "Print struk otomatis setelah bayar", val: autoPrint, set: () => setAutoPrint(!autoPrint) },
+            ].map((pref, i) => (
+              <label
+                key={i}
+                className="
+                  flex
+                  items-center
+                  justify-between
+                  p-3
+                  rounded-xl
+                  hover:bg-emerald-50/50
+                  cursor-pointer
+                  transition-colors
+                "
+              >
+                <span className="text-xs sm:text-sm font-semibold text-gray-700">{pref.label}</span>
+                <input
+                  type="checkbox"
+                  checked={pref.val}
+                  onChange={pref.set}
+                  className="w-5 h-5 rounded-lg text-emerald-600 focus:ring-emerald-500 border-gray-300 cursor-pointer accent-emerald-600"
+                />
+              </label>
+            ))}
+          </div>
+        </div>
 
       </div>
 
-      {/* Notifikasi */}
 
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      {/* ======================================================
+          4. BACKUP DATA & RESET
+      ====================================================== */}
+      <div
+        className="
+          bg-gradient-to-b
+          from-white
+          via-white
+          to-emerald-50/20
+          rounded-3xl
+          p-6
+          sm:p-8
+          border
+          border-emerald-100/70
+          shadow-sm
+        "
+      >
 
-        <div className="flex items-center gap-3 mb-6">
-
-          <Bell className="text-emerald-600" />
-
-          <h2 className="text-xl font-bold">
-            Notifikasi
-          </h2>
-
+        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+          <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700">
+            <Database size={22} className="stroke-[2.5]" />
+          </div>
+          <div>
+            <h2 className="text-lg font-extrabold text-gray-900">
+              Cadangan & Reset Data Toko
+            </h2>
+            <p className="text-xs text-gray-400 font-medium">
+              Data transaksi tersimpan aman di database cloud Supabase
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-4">
-
-          <label className="flex justify-between items-center">
-
-            <span>Notifikasi stok menipis</span>
-
-            <input
-              type="checkbox"
-              checked={stockNotif}
-              onChange={() =>
-                setStockNotif(!stockNotif)
-              }
-            />
-
-          </label>
-
-          <label className="flex justify-between items-center">
-
-            <span>Suara transaksi</span>
-
-            <input
-              type="checkbox"
-              checked={soundNotif}
-              onChange={() =>
-                setSoundNotif(!soundNotif)
-              }
-            />
-
-          </label>
-
-          <label className="flex justify-between items-center">
-
-            <span>Print otomatis setelah bayar</span>
-
-            <input
-              type="checkbox"
-              checked={autoPrint}
-              onChange={() =>
-                setAutoPrint(!autoPrint)
-              }
-            />
-
-          </label>
-
-        </div>
-
-      </div>
-
-      {/* Backup */}
-
-      <div className="bg-white rounded-2xl shadow-sm p-6">
-
-        <div className="flex items-center gap-3 mb-6">
-
-          <Database className="text-emerald-600" />
-
-          <h2 className="text-xl font-bold">
-            Backup & Reset
-          </h2>
-
-        </div>
-
-        <p className="text-sm text-gray-500 mb-4">
-          Data Produk & Riwayat Transaksi tersimpan aman di cloud (Supabase),
-          jadi tidak akan hilang walau ganti perangkat. Tombol Backup di bawah
-          ini hanya untuk mengunduh salinan cadangan berupa file JSON.
+        <p className="text-xs sm:text-sm text-gray-500 mb-6 leading-relaxed">
+          Anda dapat mengunduh salinan berkas cadangan (JSON) untuk keperluan arsip lokal. Fitur reset akan mengosongkan seluruh riwayat penjualan dan daftar produk di akun toko ini.
         </p>
 
-        <div className="flex flex-wrap gap-4">
-
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={backupData}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
+            className="
+              flex
+              items-center
+              gap-2
+              bg-white
+              hover:bg-emerald-50
+              text-emerald-700
+              border
+              border-emerald-200
+              px-5
+              py-3
+              rounded-2xl
+              font-bold
+              text-xs
+              sm:text-sm
+              shadow-sm
+              transition-all
+              active:scale-95
+            "
           >
-            <Download size={18} />
-            Backup Data (JSON)
+            <Download size={17} />
+            <span>Download Backup (JSON)</span>
           </button>
 
           <button
             onClick={resetAll}
             disabled={resetting}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl disabled:opacity-60"
+            className="
+              flex
+              items-center
+              gap-2
+              bg-rose-50
+              hover:bg-rose-100
+              text-rose-700
+              border
+              border-rose-200
+              px-5
+              py-3
+              rounded-2xl
+              font-bold
+              text-xs
+              sm:text-sm
+              transition-all
+              active:scale-95
+              disabled:opacity-60
+            "
           >
-            <RotateCcw size={18} />
-            {resetting
-              ? "Menghapus..."
-              : "Reset Data Produk & Riwayat"}
+            <RotateCcw size={17} />
+            <span>{resetting ? "Sedang Mengosongkan..." : "Reset Produk & Riwayat"}</span>
           </button>
-
         </div>
 
       </div>
 
-      {/* Tentang */}
 
-      <div className="bg-white rounded-2xl shadow-sm p-6">
-
-        <div className="flex items-center gap-3 mb-6">
-
-          <Info className="text-emerald-600" />
-
-          <h2 className="text-xl font-bold">
-            Tentang Aplikasi
-          </h2>
-
+      {/* ======================================================
+          5. TENTANG APLIKASI
+      ====================================================== */}
+      <div
+        className="
+          bg-gradient-to-b
+          from-white
+          via-white
+          to-emerald-50/20
+          rounded-3xl
+          p-6
+          sm:p-8
+          border
+          border-emerald-100/70
+          shadow-sm
+        "
+      >
+        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+          <div className="p-2.5 rounded-2xl bg-emerald-100 text-emerald-700">
+            <Info size={22} className="stroke-[2.5]" />
+          </div>
+          <div>
+            <h2 className="text-lg font-extrabold text-gray-900">
+              Tentang Aplikasi
+            </h2>
+            <p className="text-xs text-gray-400 font-medium">
+              Informasi versi dan pengembang
+            </p>
+          </div>
         </div>
 
-        <div className="space-y-2 text-gray-600">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm">
+          <div className="p-4 rounded-2xl bg-gray-50/80 border border-gray-200/60">
+            <span className="text-gray-400 font-bold uppercase text-[10px] block">Aplikasi</span>
+            <span className="font-extrabold text-gray-800 text-base mt-0.5 block">Cashier-in POS</span>
+          </div>
 
-          <p>
-            <strong>Aplikasi :</strong> Cashier-in POS
-          </p>
+          <div className="p-4 rounded-2xl bg-gray-50/80 border border-gray-200/60">
+            <span className="text-gray-400 font-bold uppercase text-[10px] block">Versi</span>
+            <span className="font-extrabold text-emerald-700 text-base mt-0.5 block">1.0.0 Stable</span>
+          </div>
 
-          <p>
-            <strong>Versi :</strong> 1.0.0
-          </p>
-
-          <p>
-            <strong>Developer :</strong> Bibinn
-          </p>
-
-          <p>
-            Sistem kasir sederhana untuk UMKM.
-          </p>
-
+          <div className="p-4 rounded-2xl bg-gray-50/80 border border-gray-200/60">
+            <span className="text-gray-400 font-bold uppercase text-[10px] block">Developer</span>
+            <span className="font-extrabold text-gray-800 text-base mt-0.5 block">Bibinn</span>
+          </div>
         </div>
-
-      </div>
-
-      {/* Simpan */}
-
-      <div className="flex justify-end">
-
-        <button
-          onClick={saveSettings}
-          disabled={saving}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl disabled:opacity-60"
-        >
-          <Save size={18} />
-          {saving ? "Menyimpan..." : "Simpan Pengaturan"}
-        </button>
-
       </div>
 
     </div>
@@ -585,8 +807,8 @@ export default function Settings() {
 
   if (storeLoading) {
     return (
-      <div className="flex items-center justify-center py-20 text-gray-400">
-        Memuat pengaturan...
+      <div className="flex items-center justify-center py-24 text-emerald-700 font-semibold text-sm animate-pulse">
+        Memuat data pengaturan toko...
       </div>
     );
   }

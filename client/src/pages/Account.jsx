@@ -18,11 +18,12 @@ import {
   Calendar,
   Crown,
   ShieldCheck,
-  Camera,
   Pencil,
   Lock,
   LogOut,
   AlertTriangle,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 
 
@@ -126,7 +127,7 @@ export default function Account() {
 
   const logout = async () => {
 
-    if (!window.confirm("Yakin ingin logout?")) {
+    if (!window.confirm("Yakin ingin logout dari akun ini?")) {
       return;
     }
 
@@ -141,7 +142,7 @@ export default function Account() {
 
   return (
 
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in max-w-5xl">
 
 
       {/* ======================================================
@@ -150,12 +151,12 @@ export default function Account() {
 
       <div>
 
-        <h1 className="text-3xl font-bold">
-          Akun
+        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+          Akun & Toko
         </h1>
 
-        <p className="text-gray-500 mt-1">
-          Informasi akun dan toko.
+        <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1">
+          Kelola informasi profil kasir, keamanan akun, dan masa aktif langganan.
         </p>
 
       </div>
@@ -167,50 +168,48 @@ export default function Account() {
 
       {subscriptionExpiringSoon && (
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+        <div className="rounded-3xl border border-amber-300/80 bg-gradient-to-r from-amber-50 via-amber-100/40 to-white p-5 sm:p-6 shadow-sm">
 
           <div className="flex items-start gap-4">
 
-            <div className="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200">
 
               <AlertTriangle
-                size={23}
-                className="text-amber-600"
+                size={22}
+                className="stroke-[2.5]"
               />
 
             </div>
 
             <div className="flex-1">
 
-              <h2 className="font-bold text-amber-800">
+              <h2 className="font-extrabold text-amber-900 text-base">
 
-                Langganan hampir habis
+                Masa Aktif Langganan Segera Berakhir
 
               </h2>
 
-              <p className="text-sm text-amber-700 mt-1">
+              <p className="text-xs sm:text-sm text-amber-800/90 mt-1">
 
                 Langganan toko Anda tersisa{" "}
-
-                <strong>
-                  {daysRemaining} hari
+                <strong className="font-black text-amber-950 underline">
+                  {daysRemaining} hari lagi
                 </strong>
-
                 {" "}dan akan berakhir pada{" "}
-
-                <strong>
+                <span className="font-bold">
                   {formatSubscriptionDate(
                     store.subscriptionExpiresAt
                   )}
-                </strong>.
+                </span>.
 
               </p>
 
               <button
                 onClick={() => setOpenRenewSubscription(true)}
-                className="mt-3 text-sm font-semibold text-amber-800 hover:text-amber-900 underline"
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs shadow-sm transition-all"
               >
-                Perpanjang langganan
+                <Zap size={14} />
+                <span>Perpanjang Sekarang</span>
               </button>
 
             </div>
@@ -223,60 +222,59 @@ export default function Account() {
 
 
       {/* ======================================================
-          PROFIL UTAMA
+          PROFIL UTAMA HERO CARD
       ====================================================== */}
 
-      <div className="bg-white rounded-2xl shadow-sm p-8">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 p-6 sm:p-8 text-white shadow-xl shadow-emerald-950/10 border border-emerald-600/40">
+        <div className="absolute -right-12 -top-12 w-64 h-64 bg-emerald-400/20 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="flex items-center gap-8">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
 
-          <div className="relative">
+          <div className="flex items-center gap-5 sm:gap-6">
 
-            <div className="w-28 h-28 rounded-full bg-emerald-600 flex items-center justify-center">
+            <div className="relative shrink-0">
 
-              <User
-                size={55}
-                className="text-white"
-              />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-tr from-emerald-500 to-emerald-300 text-emerald-950 flex items-center justify-center shadow-lg border-2 border-white/40">
+
+                <User
+                  size={42}
+                  className="stroke-[2.2]"
+                />
+
+              </div>
 
             </div>
 
-            <button
-              className="absolute bottom-0 right-0 bg-white rounded-full shadow p-2"
-            >
-              <Camera size={18} />
-            </button>
+            <div>
+
+              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-emerald-200 text-xs font-semibold mb-2 border border-white/20">
+                <Sparkles size={13} className="text-emerald-300" />
+                <span>Akun Terverifikasi</span>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                {store.name || "Toko Kasir"}
+              </h2>
+
+              <p className="text-emerald-100/80 text-sm font-medium mt-0.5">
+                {store.owner ? `Pemilik: ${store.owner}` : "Akun Admin"} • {admin?.email}
+              </p>
+
+            </div>
 
           </div>
 
-          <div>
-
-            <h2 className="text-3xl font-bold">
-
-              {store.name}
-
-            </h2>
-
-            <p className="text-gray-500 mt-1">
-
-              {store.owner || "Owner"}
-
-            </p>
-
+          <div className="shrink-0 self-start sm:self-auto">
             <span
-              className={`inline-block mt-3 px-4 py-1 rounded-full ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl text-xs sm:text-sm font-extrabold shadow-sm ${
                 subscriptionIsActive
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-red-100 text-red-700"
+                  ? "bg-white text-emerald-800 border border-emerald-200 shadow-emerald-900/20"
+                  : "bg-rose-500 text-white"
               }`}
             >
-
-              {subscriptionIsActive
-                ? "Starter Plan"
-                : "Langganan Tidak Aktif"}
-
+              <Crown size={15} className={subscriptionIsActive ? "text-amber-500" : "text-white"} />
+              {subscriptionIsActive ? "Starter Plan (Aktif)" : "Langganan Tidak Aktif"}
             </span>
-
           </div>
 
         </div>
@@ -285,22 +283,31 @@ export default function Account() {
 
 
       {/* ======================================================
-          INFORMASI AKUN + STATUS
+          INFORMASI AKUN + STATUS GRID
       ====================================================== */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
 
-        {/* ====================================================
-            INFORMASI AKUN
-        ==================================================== */}
+        {/* INFORMASI AKUN */}
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div
+          className="
+            bg-gradient-to-b
+            from-white
+            via-white
+            to-emerald-50/20
+            rounded-3xl
+            p-6
+            sm:p-8
+            border
+            border-emerald-100/70
+            shadow-sm
+          "
+        >
 
-          <h2 className="text-xl font-bold mb-6">
-
-            Informasi Akun
-
+          <h2 className="text-lg font-extrabold text-gray-900 mb-6 pb-4 border-b border-gray-100">
+            Informasi Toko
           </h2>
 
           <div className="space-y-5">
@@ -308,16 +315,18 @@ export default function Account() {
 
             <div className="flex items-center gap-4">
 
-              <Store className="text-emerald-600" />
+              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700">
+                <Store size={18} />
+              </div>
 
               <div>
 
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
                   Nama Toko
                 </p>
 
-                <h3 className="font-semibold">
-                  {store.name}
+                <h3 className="font-extrabold text-gray-800 text-sm mt-0.5">
+                  {store.name || "-"}
                 </h3>
 
               </div>
@@ -327,15 +336,17 @@ export default function Account() {
 
             <div className="flex items-center gap-4">
 
-              <User className="text-emerald-600" />
+              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700">
+                <User size={18} />
+              </div>
 
               <div>
 
-                <p className="text-gray-500 text-sm">
-                  Pemilik
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+                  Pemilik / Kasir
                 </p>
 
-                <h3 className="font-semibold">
+                <h3 className="font-extrabold text-gray-800 text-sm mt-0.5">
                   {store.owner || "-"}
                 </h3>
 
@@ -346,15 +357,17 @@ export default function Account() {
 
             <div className="flex items-center gap-4">
 
-              <Mail className="text-emerald-600" />
+              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700">
+                <Mail size={18} />
+              </div>
 
               <div>
 
-                <p className="text-gray-500 text-sm">
-                  Email
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+                  Email Login
                 </p>
 
-                <h3 className="font-semibold">
+                <h3 className="font-extrabold text-gray-800 text-sm mt-0.5">
                   {admin?.email || "-"}
                 </h3>
 
@@ -365,15 +378,17 @@ export default function Account() {
 
             <div className="flex items-center gap-4">
 
-              <Phone className="text-emerald-600" />
+              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700">
+                <Phone size={18} />
+              </div>
 
               <div>
 
-                <p className="text-gray-500 text-sm">
-                  Nomor HP
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+                  Nomor Telepon
                 </p>
 
-                <h3 className="font-semibold">
+                <h3 className="font-extrabold text-gray-800 text-sm mt-0.5">
                   {store.phone || "-"}
                 </h3>
 
@@ -384,15 +399,17 @@ export default function Account() {
 
             <div className="flex items-center gap-4">
 
-              <MapPin className="text-emerald-600" />
+              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700">
+                <MapPin size={18} />
+              </div>
 
               <div>
 
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
                   Alamat
                 </p>
 
-                <h3 className="font-semibold">
+                <h3 className="font-extrabold text-gray-800 text-sm mt-0.5">
                   {store.address || "-"}
                 </h3>
 
@@ -400,67 +417,52 @@ export default function Account() {
 
             </div>
 
+
           </div>
 
         </div>
 
 
-        {/* ====================================================
-            STATUS AKUN
-        ==================================================== */}
+        {/* STATUS LANGGANAN */}
 
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div
+          className="
+            bg-gradient-to-b
+            from-white
+            via-white
+            to-emerald-50/20
+            rounded-3xl
+            p-6
+            sm:p-8
+            border
+            border-emerald-100/70
+            shadow-sm
+          "
+        >
 
-          <h2 className="text-xl font-bold mb-6">
-
-            Status Akun
-
+          <h2 className="text-lg font-extrabold text-gray-900 mb-6 pb-4 border-b border-gray-100">
+            Status Paket & Masa Aktif
           </h2>
 
           <div className="space-y-5">
-
-
-            {/* BERGABUNG */}
-
-            <div className="flex items-center gap-4">
-
-              <Calendar className="text-blue-600" />
-
-              <div>
-
-                <p className="text-gray-500 text-sm">
-                  Bergabung
-                </p>
-
-                <h3 className="font-semibold">
-
-                  {new Date().toLocaleDateString(
-                    "id-ID"
-                  )}
-
-                </h3>
-
-              </div>
-
-            </div>
 
 
             {/* PAKET */}
 
             <div className="flex items-center gap-4">
 
-              <Crown className="text-yellow-500" />
+              <div className="p-2.5 rounded-xl bg-amber-50 text-amber-600">
+                <Crown size={18} />
+              </div>
 
               <div>
 
-                <p className="text-gray-500 text-sm">
-                  Paket
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+                  Paket Langganan
                 </p>
 
-                <h3 className="font-semibold">
-
-                  Starter Plan
-
+                <h3 className="font-extrabold text-gray-800 text-sm mt-0.5">
+                  Starter Plan (Full Access)
                 </h3>
 
               </div>
@@ -472,30 +474,26 @@ export default function Account() {
 
             <div className="flex items-center gap-4">
 
-              <ShieldCheck
-                className={
-                  subscriptionIsActive
-                    ? "text-green-600"
-                    : "text-red-600"
-                }
-              />
+              <div className={`p-2.5 rounded-xl ${subscriptionIsActive ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
+                <ShieldCheck size={18} />
+              </div>
 
               <div>
 
-                <p className="text-gray-500 text-sm">
-                  Status
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+                  Status Akun
                 </p>
 
                 <h3
-                  className={`font-semibold ${
+                  className={`font-extrabold text-sm mt-0.5 ${
                     subscriptionIsActive
-                      ? "text-green-600"
-                      : "text-red-600"
+                      ? "text-emerald-700"
+                      : "text-rose-600"
                   }`}
                 >
 
                   {subscriptionIsActive
-                    ? "Aktif"
+                    ? "Aktif Beroperasi"
                     : "Tidak Aktif"}
 
                 </h3>
@@ -505,35 +503,21 @@ export default function Account() {
             </div>
 
 
-            {/* =================================================
-                TANGGAL BERAKHIR
-            ================================================= */}
+            {/* TANGGAL BERAKHIR */}
 
             <div className="flex items-center gap-4">
 
-              <Calendar
-                className={
-                  subscriptionExpiringSoon
-                    ? "text-amber-600"
-                    : "text-emerald-600"
-                }
-              />
+              <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                <Calendar size={18} />
+              </div>
 
               <div>
 
-                <p className="text-gray-500 text-sm">
-                  Langganan Berakhir
+                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+                  Tanggal Berakhir
                 </p>
 
-                <h3
-                  className={`font-semibold ${
-                    subscriptionExpiringSoon
-                      ? "text-amber-600"
-                      : subscriptionExpired
-                        ? "text-red-600"
-                        : ""
-                  }`}
-                >
+                <h3 className="font-extrabold text-gray-800 text-sm mt-0.5">
 
                   {formatSubscriptionDate(
                     store.subscriptionExpiresAt
@@ -546,43 +530,35 @@ export default function Account() {
             </div>
 
 
-            {/* =================================================
-                SISA HARI
-            ================================================= */}
+            {/* SISA HARI */}
 
             {daysRemaining !== null && (
 
               <div className="flex items-center gap-4">
 
-                <Calendar
-                  className={
-                    subscriptionExpiringSoon
-                      ? "text-amber-600"
-                      : subscriptionExpired
-                        ? "text-red-600"
-                        : "text-emerald-600"
-                  }
-                />
+                <div className="p-2.5 rounded-xl bg-purple-50 text-purple-600">
+                  <Calendar size={18} />
+                </div>
 
                 <div>
 
-                  <p className="text-gray-500 text-sm">
-                    Sisa Langganan
+                  <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+                    Sisa Waktu
                   </p>
 
                   <h3
-                    className={`font-semibold ${
+                    className={`font-extrabold text-sm mt-0.5 ${
                       subscriptionExpiringSoon
-                        ? "text-amber-600"
+                        ? "text-amber-700"
                         : subscriptionExpired
-                          ? "text-red-600"
-                          : "text-emerald-600"
+                          ? "text-rose-600"
+                          : "text-emerald-700"
                     }`}
                   >
 
                     {subscriptionExpired
-                      ? "Sudah berakhir"
-                      : `${daysRemaining} hari`}
+                      ? "Sudah Berakhir"
+                      : `${daysRemaining} Hari`}
 
                   </h3>
 
@@ -594,36 +570,89 @@ export default function Account() {
 
           </div>
 
+          <div className="mt-8 pt-4 border-t border-gray-100">
+            <button
+              onClick={() => setOpenRenewSubscription(true)}
+              className="
+                w-full
+                py-3
+                bg-gradient-to-r
+                from-emerald-600
+                to-emerald-700
+                hover:from-emerald-700
+                hover:to-emerald-800
+                text-white
+                rounded-2xl
+                font-extrabold
+                text-sm
+                shadow-sm
+                transition-all
+                active:scale-95
+              "
+            >
+              Perpanjang Langganan
+            </button>
+          </div>
+
         </div>
+
 
       </div>
 
 
       {/* ======================================================
-          PENGATURAN AKUN
+          AKSI PENGATURAN AKUN
       ====================================================== */}
 
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div
+        className="
+          bg-gradient-to-b
+          from-white
+          via-white
+          to-emerald-50/20
+          rounded-3xl
+          p-6
+          sm:p-8
+          border
+          border-emerald-100/70
+          shadow-sm
+        "
+      >
 
-        <h2 className="text-xl font-bold mb-6">
-
-          Pengaturan Akun
-
+        <h2 className="text-lg font-extrabold text-gray-900 mb-6 pb-4 border-b border-gray-100">
+          Tindakan Akun
         </h2>
 
-        <div className="flex flex-wrap gap-4">
-
+        <div className="flex flex-wrap gap-3">
 
           <button
             onClick={() =>
               setOpenEditProfile(true)
             }
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl"
+            className="
+              flex
+              items-center
+              gap-2
+              bg-white
+              hover:bg-emerald-50
+              text-emerald-700
+              border
+              border-emerald-200
+              px-5
+              py-3
+              rounded-2xl
+              font-bold
+              text-xs
+              sm:text-sm
+              shadow-sm
+              transition-all
+              active:scale-95
+            "
           >
 
-            <Pencil size={18} />
+            <Pencil size={16} />
 
-            Edit Profil
+            <span>Edit Email Profil</span>
 
           </button>
 
@@ -632,24 +661,59 @@ export default function Account() {
             onClick={() =>
               setOpenChangePassword(true)
             }
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl"
+            className="
+              flex
+              items-center
+              gap-2
+              bg-white
+              hover:bg-blue-50
+              text-blue-700
+              border
+              border-blue-200
+              px-5
+              py-3
+              rounded-2xl
+              font-bold
+              text-xs
+              sm:text-sm
+              shadow-sm
+              transition-all
+              active:scale-95
+            "
           >
 
-            <Lock size={18} />
+            <Lock size={16} />
 
-            Ganti Password
+            <span>Ganti Password</span>
 
           </button>
 
 
           <button
             onClick={logout}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl"
+            className="
+              flex
+              items-center
+              gap-2
+              bg-rose-50
+              hover:bg-rose-100
+              text-rose-700
+              border
+              border-rose-200
+              px-5
+              py-3
+              rounded-2xl
+              font-bold
+              text-xs
+              sm:text-sm
+              transition-all
+              active:scale-95
+            "
           >
 
-            <LogOut size={18} />
+            <LogOut size={16} />
 
-            Logout
+            <span>Keluar (Logout)</span>
 
           </button>
 
@@ -659,7 +723,7 @@ export default function Account() {
 
 
       {/* ======================================================
-          EDIT PROFILE MODAL
+          MODALS
       ====================================================== */}
 
       <EditProfileModal
@@ -695,10 +759,6 @@ export default function Account() {
         }}
       />
 
-
-      {/* ======================================================
-          CHANGE PASSWORD MODAL
-      ====================================================== */}
 
       <ChangePasswordModal
         key={openChangePassword ? "pw-open" : "pw-closed"}
@@ -737,10 +797,6 @@ export default function Account() {
         }}
       />
 
-
-      {/* ======================================================
-          RENEW SUBSCRIPTION MODAL
-      ====================================================== */}
 
       <RenewSubscriptionModal
         key={openRenewSubscription ? "renew-open" : "renew-closed"}
