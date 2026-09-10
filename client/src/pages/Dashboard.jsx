@@ -89,7 +89,9 @@ export default function Dashboard() {
   const totalStock =
     products.reduce(
       (total, product) =>
-        total + Number(product.stock || 0),
+        product.is_unlimited
+          ? total
+          : total + Number(product.stock || 0),
       0
     );
 
@@ -338,6 +340,7 @@ export default function Dashboard() {
                       product.price || 0
                     ).toLocaleString("id-ID")}`}
                     stock={product.stock}
+                    isUnlimited={product.is_unlimited}
                     onAdd={() =>
                       addToCart(product)
                     }

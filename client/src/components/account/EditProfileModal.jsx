@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -44,7 +45,7 @@ export default function EditProfileModal({
 
   };
 
-  return (
+  return createPortal(
 
     <div
       onClick={onClose}
@@ -107,7 +108,9 @@ export default function EditProfileModal({
 
       </form>
 
-    </div>
+    </div>,
+
+    document.body
 
   );
 

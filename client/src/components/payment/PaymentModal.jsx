@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, CreditCard, Banknote, CheckCircle, ArrowRight } from "lucide-react";
 import { useStore } from "../../context/StoreContext";
 
@@ -35,7 +36,7 @@ export default function PaymentModal({
 
   const canPay = isCash ? paid >= total : true;
 
-  return (
+  return createPortal(
     <div
       onClick={onClose}
       className="fixed inset-0 bg-emerald-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
@@ -272,6 +273,7 @@ export default function PaymentModal({
 
       </div>
 
-    </div>
+    </div>,
+    document.body
   );
 }

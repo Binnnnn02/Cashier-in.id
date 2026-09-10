@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Printer, Download, CheckCircle, Store, X } from "lucide-react";
@@ -117,7 +118,7 @@ export default function InvoiceModal({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       onClick={onClose}
       className="fixed inset-0 bg-emerald-950/45 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
@@ -351,6 +352,7 @@ export default function InvoiceModal({
           {store.footer || "Terima kasih telah berbelanja."}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -44,7 +44,7 @@ export default function Header() {
   const stockNotifEnabled = store.stockNotif;
 
   const lowStockProducts = products.filter(
-    (product) => Number(product.stock) <= 5
+    (product) => !product.is_unlimited && Number(product.stock) <= 5
   );
 
   useEffect(() => {
@@ -100,6 +100,8 @@ export default function Header() {
   return (
     <header
       className="
+        relative
+        z-30
         bg-white/85
         backdrop-blur-md
         border

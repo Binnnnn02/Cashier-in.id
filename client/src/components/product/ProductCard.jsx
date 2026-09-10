@@ -6,10 +6,11 @@ export default function ProductCard({
   emoji,
   price,
   stock,
+  isUnlimited,
   onAdd,
 }) {
-  const outOfStock = stock <= 0;
-  const isLowStock = stock > 0 && stock <= 5;
+  const outOfStock = !isUnlimited && stock <= 0;
+  const isLowStock = !isUnlimited && stock > 0 && stock <= 5;
 
   return (
     <div
@@ -56,7 +57,11 @@ export default function ProductCard({
 
           {/* Stock Badges overlay */}
           <div className="absolute top-2.5 right-2.5">
-            {outOfStock ? (
+            {isUnlimited ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-600/90 backdrop-blur-sm text-white shadow-sm">
+                Selalu Tersedia
+              </span>
+            ) : outOfStock ? (
               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500 text-white shadow-sm">
                 Habis
               </span>
@@ -85,7 +90,7 @@ export default function ProductCard({
 
             <span className="text-xs text-gray-400 font-medium flex items-center gap-1">
               <Package size={13} className="text-gray-400" />
-              Stok: {stock}
+              Stok: {isUnlimited ? "∞" : stock}
             </span>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { Copy, MessageCircle } from "lucide-react";
+import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 
 import { useAuth } from "../../context/AuthContext";
@@ -27,7 +28,7 @@ export default function RenewSubscriptionModal({ open, onClose }) {
 
   const whatsappLink = buildWhatsappLink(admin?.email);
 
-  return (
+  return createPortal(
 
     <div
       onClick={onClose}
@@ -121,7 +122,9 @@ export default function RenewSubscriptionModal({ open, onClose }) {
 
       </div>
 
-    </div>
+    </div>,
+
+    document.body
 
   );
 

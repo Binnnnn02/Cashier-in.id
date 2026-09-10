@@ -184,7 +184,9 @@ export default function Product() {
      STOCK STATUS
   ========================= */
 
-  const getStockStatus = (stock) => {
+  const getStockStatus = (stock, isUnlimited) => {
+
+    if (isUnlimited) return "Tidak Terbatas";
 
     if (Number(stock) === 0) return "Habis";
 
@@ -229,8 +231,8 @@ export default function Product() {
         product.name,
         product.category || "-",
         `Rp${Number(product.price).toLocaleString("id-ID")}`,
-        `${product.stock} pcs`,
-        getStockStatus(product.stock),
+        product.is_unlimited ? "Tidak Terbatas" : `${product.stock} pcs`,
+        getStockStatus(product.stock, product.is_unlimited),
       ]),
 
       styles: { fontSize: 9 },
@@ -250,8 +252,8 @@ export default function Product() {
       "Nama Produk": product.name,
       "Kategori": product.category || "-",
       "Harga": product.price,
-      "Stok": product.stock,
-      "Status": getStockStatus(product.stock),
+      "Stok": product.is_unlimited ? "Tidak Terbatas" : product.stock,
+      "Status": getStockStatus(product.stock, product.is_unlimited),
 
     }));
 
@@ -784,6 +786,7 @@ export default function Product() {
                     const stockNum = Number(product.stock);
                     const isZero = stockNum === 0;
                     const isLow = stockNum > 0 && stockNum <= 5;
+                    const isUnlimited = product.is_unlimited;
 
                     return (
                       <tr
@@ -911,7 +914,9 @@ export default function Product() {
                               text-xs
                               font-bold
                               ${
-                                isZero
+                                isUnlimited
+                                  ? "bg-sky-50 text-sky-700 border border-sky-200"
+                                  : isZero
                                   ? "bg-rose-50 text-rose-700 border border-rose-200"
                                   : isLow
                                   ? "bg-amber-50 text-amber-700 border border-amber-200"
@@ -920,9 +925,11 @@ export default function Product() {
                             `}
                           >
                             <span className={`w-1.5 h-1.5 rounded-full ${
-                              isZero ? "bg-rose-500" : isLow ? "bg-amber-500" : "bg-emerald-500"
+                              isUnlimited ? "bg-sky-500" : isZero ? "bg-rose-500" : isLow ? "bg-amber-500" : "bg-emerald-500"
                             }`} />
-                            {product.stock} pcs ({getStockStatus(product.stock)})
+                            {isUnlimited
+                              ? "Tidak Terbatas"
+                              : `${product.stock} pcs (${getStockStatus(product.stock, false)})`}
                           </span>
 
                         </td>

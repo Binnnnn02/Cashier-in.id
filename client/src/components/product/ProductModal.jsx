@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Package, DollarSign, Boxes, Tag, Smile, Image as ImageIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -20,6 +21,7 @@ export default function ProductModal({
         name: product.name || "",
         price: product.price ?? "",
         stock: product.stock ?? "",
+        isUnlimited: product.is_unlimited || false,
         category: product.category || "Makanan",
         emoji: product.emoji || "📦",
         image: product.image || "",
@@ -30,6 +32,7 @@ export default function ProductModal({
       name: "",
       price: "",
       stock: "",
+      isUnlimited: false,
       category: "Makanan",
       emoji: "📦",
       image: "",
@@ -79,7 +82,10 @@ export default function ProductModal({
       return;
     }
 
-    if (form.stock === "" || isNaN(Number(form.stock)) || Number(form.stock) < 0) {
+    if (
+      !form.isUnlimited &&
+      (form.stock === "" || isNaN(Number(form.stock)) || Number(form.stock) < 0)
+    ) {
       toast.error("Stok harus berupa angka dan minimal 0");
       return;
     }
@@ -89,13 +95,14 @@ export default function ProductModal({
       name: form.name.trim(),
       category: form.category.trim() || "Umum",
       price: Number(form.price),
-      stock: Number(form.stock),
+      stock: form.isUnlimited ? 0 : Number(form.stock),
+      isUnlimited: form.isUnlimited,
     });
 
     onClose();
   };
 
-  return (
+  return createPortal(
     <div
       onClick={onClose}
       className="fixed inset-0 bg-emerald-950/45 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
@@ -209,16 +216,17 @@ export default function ProductModal({
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">
-                Jumlah Stok *
+                Jumlah Stok {!form.isUnlimited && "*"}
               </label>
               <input
                 name="stock"
                 type="number"
                 min="0"
-                value={form.stock}
+                value={form.isUnlimited ? "" : form.stock}
                 onChange={handleChange}
-                placeholder="50"
-                className="
+                placeholder={form.isUnlimited ? "Tidak terbatas" : "50"}
+                disabled={form.isUnlimited}
+                className={`
                   w-full
                   p-3.5
                   bg-gray-50/80
@@ -234,11 +242,50 @@ export default function ProductModal({
                   focus:ring-4
                   focus:ring-emerald-500/10
                   transition-all
-                "
-                required
+                  ${form.isUnlimited ? "opacity-50 cursor-not-allowed" : ""}
+                `}
+                required={!form.isUnlimited}
               />
             </div>
           </div>
+
+          {/* Toggle Stok Tidak Terbatas */}
+          <label
+            className="
+              flex
+              items-center
+              justify-between
+              gap-3
+              p-4
+              rounded-2xl
+              bg-gray-50/80
+              border
+              border-gray-200/80
+              hover:border-emerald-300
+              cursor-pointer
+              transition-all
+            "
+          >
+            <span>
+              <span className="block text-sm font-bold text-gray-800">
+                Stok Tidak Terbatas
+              </span>
+              <span className="block text-xs text-gray-400 font-medium mt-0.5">
+                Cocok untuk produk yang dimasak/dibuat sesuai pesanan, bukan barang jadi seperti sachet.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              checked={form.isUnlimited}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  isUnlimited: e.target.checked,
+                }))
+              }
+              className="w-5 h-5 shrink-0 rounded-lg text-emerald-600 focus:ring-emerald-500 border-gray-300 cursor-pointer accent-emerald-600"
+            />
+          </label>
 
           {/* Kategori */}
           <div>
@@ -425,6 +472,7 @@ export default function ProductModal({
 
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

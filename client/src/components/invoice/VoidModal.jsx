@@ -1,4 +1,5 @@
 import { Undo2 } from "lucide-react";
+import { createPortal } from "react-dom";
 
 export default function VoidModal({
   open,
@@ -9,7 +10,7 @@ export default function VoidModal({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
 
     <div
       onClick={onClose}
@@ -72,7 +73,9 @@ export default function VoidModal({
 
       </div>
 
-    </div>
+    </div>,
+
+    document.body
 
   );
 

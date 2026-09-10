@@ -153,6 +153,7 @@ export function ProductProvider({ children }) {
         category: product.category || "",
         price: Number(product.price) || 0,
         stock: Number(product.stock) || 0,
+        is_unlimited: !!product.isUnlimited,
         emoji: product.emoji || "📦",
         image: product.image || null,
 
@@ -188,6 +189,7 @@ export function ProductProvider({ children }) {
         category: product.category || "",
         price: Number(product.price) || 0,
         stock: Number(product.stock) || 0,
+        is_unlimited: !!product.isUnlimited,
         emoji: product.emoji || "📦",
         image: product.image || null,
 
@@ -249,7 +251,7 @@ export function ProductProvider({ children }) {
 
   const addToCart = (product) => {
 
-    if (product.stock <= 0) {
+    if (!product.is_unlimited && product.stock <= 0) {
 
       toast.error("Stok habis");
 
@@ -280,13 +282,17 @@ export function ProductProvider({ children }) {
 
     }
 
-    setProducts(
-      products.map((item) =>
-        item.id === product.id
-          ? { ...item, stock: item.stock - 1 }
-          : item
-      )
-    );
+    if (!product.is_unlimited) {
+
+      setProducts(
+        products.map((item) =>
+          item.id === product.id
+            ? { ...item, stock: item.stock - 1 }
+            : item
+        )
+      );
+
+    }
 
     toast.success(`${product.name} ditambahkan`);
 
@@ -296,7 +302,9 @@ export function ProductProvider({ children }) {
 
     const product = products.find((p) => p.id === id);
 
-    if (!product || product.stock <= 0) {
+    if (!product) return;
+
+    if (!product.is_unlimited && product.stock <= 0) {
 
       toast.error("Stok habis");
 
@@ -312,13 +320,17 @@ export function ProductProvider({ children }) {
       )
     );
 
-    setProducts(
-      products.map((item) =>
-        item.id === id
-          ? { ...item, stock: item.stock - 1 }
-          : item
-      )
-    );
+    if (!product.is_unlimited) {
+
+      setProducts(
+        products.map((item) =>
+          item.id === id
+            ? { ...item, stock: item.stock - 1 }
+            : item
+        )
+      );
+
+    }
 
   };
 
@@ -328,13 +340,17 @@ export function ProductProvider({ children }) {
 
     if (!item) return;
 
-    setProducts(
-      products.map((product) =>
-        product.id === id
-          ? { ...product, stock: product.stock + item.qty }
-          : product
-      )
-    );
+    if (!item.is_unlimited) {
+
+      setProducts(
+        products.map((product) =>
+          product.id === id
+            ? { ...product, stock: product.stock + item.qty }
+            : product
+        )
+      );
+
+    }
 
     setCart(
       cart.filter((item) => item.id !== id)
@@ -366,13 +382,17 @@ export function ProductProvider({ children }) {
       )
     );
 
-    setProducts(
-      products.map((product) =>
-        product.id === id
-          ? { ...product, stock: product.stock + 1 }
-          : product
-      )
-    );
+    if (!item.is_unlimited) {
+
+      setProducts(
+        products.map((product) =>
+          product.id === id
+            ? { ...product, stock: product.stock + 1 }
+            : product
+        )
+      );
+
+    }
 
   };
 
@@ -471,6 +491,8 @@ export function ProductProvider({ children }) {
     await Promise.all(
 
       cart.map((item) => {
+
+        if (item.is_unlimited) return null;
 
         const current = products.find((p) => p.id === item.id);
 
@@ -571,6 +593,8 @@ export function ProductProvider({ children }) {
         );
 
         if (idx === -1) return null; // produk sudah dihapus, lewati
+
+        if (updatedProducts[idx].is_unlimited) return null; // stok tidak terbatas, tidak perlu dikembalikan
 
         const newStock =
           Number(updatedProducts[idx].stock || 0) + Number(item.qty || 0);

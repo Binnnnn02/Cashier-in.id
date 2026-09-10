@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -43,7 +44,7 @@ export default function ChangePasswordModal({
 
   };
 
-  return (
+  return createPortal(
 
     <div
       onClick={onClose}
@@ -142,7 +143,9 @@ export default function ChangePasswordModal({
 
       </form>
 
-    </div>
+    </div>,
+
+    document.body
 
   );
 

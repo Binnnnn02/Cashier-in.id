@@ -1,4 +1,5 @@
 import { TriangleAlert } from "lucide-react";
+import { createPortal } from "react-dom";
 
 export default function DeleteModal({
   open,
@@ -9,7 +10,7 @@ export default function DeleteModal({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
 
     <div
       onClick={onClose}
@@ -68,7 +69,9 @@ export default function DeleteModal({
 
       </div>
 
-    </div>
+    </div>,
+
+    document.body
 
   );
 
