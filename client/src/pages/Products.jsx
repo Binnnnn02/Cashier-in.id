@@ -10,6 +10,7 @@ import {
   FileSpreadsheet,
   Filter,
   ArrowUpDown,
+  PackagePlus,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -18,7 +19,9 @@ import { saveAs } from "file-saver";
 
 import ProductModal from "../components/product/ProductModal";
 import DeleteModal from "../components/product/DeleteModal";
+import StockOnlyModal from "../components/product/StockOnlyModal";
 import { useProducts } from "../context/ProductContext";
+import { useRole } from "../context/RoleContext";
 
 export default function Product() {
 
@@ -29,10 +32,19 @@ export default function Product() {
     deleteProduct,
   } = useProducts();
 
+  const { hasPermission } = useRole();
+
+  // Kasir hanya punya products:stock, bukan products penuh
+  const isKasir = !hasPermission("products") && hasPermission("products:stock");
+
+
   const [searchParams] = useSearchParams();
   const urlSearch = searchParams.get("search") || "";
 
   const [isModalOpen, setIsModalOpen] =
+    useState(false);
+
+  const [isStockModalOpen, setIsStockModalOpen] =
     useState(false);
 
   const [search, setSearch] = useState(urlSearch);
@@ -320,108 +332,150 @@ export default function Product() {
 
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
 
-          <button
-            onClick={downloadPDF}
-            className="
-              flex-1
-              sm:flex-none
-              bg-white
-              hover:bg-rose-50
-              text-rose-700
-              border
-              border-rose-200
-              px-4
-              py-2.5
-              rounded-2xl
-              flex
-              items-center
-              justify-center
-              gap-2
-              text-xs
-              sm:text-sm
-              font-bold
-              shadow-sm
-              transition-all
-              active:scale-95
-            "
-          >
+          {/* Tombol Export — hanya owner & admin */}
+          {!isKasir && (
+            <>
+              <button
+                onClick={downloadPDF}
+                className="
+                  flex-1
+                  sm:flex-none
+                  bg-white
+                  hover:bg-rose-50
+                  text-rose-700
+                  border
+                  border-rose-200
+                  px-4
+                  py-2.5
+                  rounded-2xl
+                  flex
+                  items-center
+                  justify-center
+                  gap-2
+                  text-xs
+                  sm:text-sm
+                  font-bold
+                  shadow-sm
+                  transition-all
+                  active:scale-95
+                "
+              >
 
-            <FileDown size={16} />
+                <FileDown size={16} />
 
-            <span>Export PDF</span>
+                <span>Export PDF</span>
 
-          </button>
+              </button>
 
-          <button
-            onClick={downloadExcel}
-            className="
-              flex-1
-              sm:flex-none
-              bg-white
-              hover:bg-emerald-50
-              text-emerald-700
-              border
-              border-emerald-200
-              px-4
-              py-2.5
-              rounded-2xl
-              flex
-              items-center
-              justify-center
-              gap-2
-              text-xs
-              sm:text-sm
-              font-bold
-              shadow-sm
-              transition-all
-              active:scale-95
-            "
-          >
+              <button
+                onClick={downloadExcel}
+                className="
+                  flex-1
+                  sm:flex-none
+                  bg-white
+                  hover:bg-emerald-50
+                  text-emerald-700
+                  border
+                  border-emerald-200
+                  px-4
+                  py-2.5
+                  rounded-2xl
+                  flex
+                  items-center
+                  justify-center
+                  gap-2
+                  text-xs
+                  sm:text-sm
+                  font-bold
+                  shadow-sm
+                  transition-all
+                  active:scale-95
+                "
+              >
 
-            <FileSpreadsheet size={16} />
+                <FileSpreadsheet size={16} />
 
-            <span>Export Excel</span>
+                <span>Export Excel</span>
 
-          </button>
+              </button>
 
-          <button
-            onClick={() =>
-              setIsModalOpen(true)
-            }
-            className="
-              w-full
-              sm:w-auto
-              bg-gradient-to-r
-              from-emerald-600
-              via-emerald-600
-              to-emerald-700
-              hover:from-emerald-700
-              hover:to-emerald-800
-              text-white
-              px-5
-              py-2.5
-              rounded-2xl
-              flex
-              items-center
-              justify-center
-              gap-2
-              text-xs
-              sm:text-sm
-              font-extrabold
-              shadow-md
-              shadow-emerald-600/20
-              hover:shadow-lg
-              hover:shadow-emerald-600/30
-              transition-all
-              active:scale-95
-            "
-          >
+              <button
+                onClick={() =>
+                  setIsModalOpen(true)
+                }
+                className="
+                  w-full
+                  sm:w-auto
+                  bg-gradient-to-r
+                  from-emerald-600
+                  via-emerald-600
+                  to-emerald-700
+                  hover:from-emerald-700
+                  hover:to-emerald-800
+                  text-white
+                  px-5
+                  py-2.5
+                  rounded-2xl
+                  flex
+                  items-center
+                  justify-center
+                  gap-2
+                  text-xs
+                  sm:text-sm
+                  font-extrabold
+                  shadow-md
+                  shadow-emerald-600/20
+                  hover:shadow-lg
+                  hover:shadow-emerald-600/30
+                  transition-all
+                  active:scale-95
+                "
+              >
 
-            <Plus size={18} className="stroke-[3]" />
+                <Plus size={18} className="stroke-[3]" />
 
-            <span>Tambah Produk</span>
+                <span>Tambah Produk</span>
 
-          </button>
+              </button>
+            </>
+          )}
+
+          {/* Tombol Tambah Stok — khusus kasir */}
+          {isKasir && (
+            <button
+              onClick={() => setIsStockModalOpen(true)}
+              className="
+                w-full
+                sm:w-auto
+                bg-gradient-to-r
+                from-emerald-600
+                via-emerald-600
+                to-emerald-700
+                hover:from-emerald-700
+                hover:to-emerald-800
+                text-white
+                px-5
+                py-2.5
+                rounded-2xl
+                flex
+                items-center
+                justify-center
+                gap-2
+                text-xs
+                sm:text-sm
+                font-extrabold
+                shadow-md
+                shadow-emerald-600/20
+                hover:shadow-lg
+                hover:shadow-emerald-600/30
+                transition-all
+                active:scale-95
+              "
+            >
+              <PackagePlus size={18} className="stroke-[2.5]" />
+              <span>+ Tambah Stok</span>
+            </button>
+          )}
 
         </div>
 
@@ -729,6 +783,16 @@ export default function Product() {
 
 
       {/* =========================
+          STOCK ONLY MODAL (kasir)
+      ========================= */}
+
+      <StockOnlyModal
+        open={isStockModalOpen}
+        onClose={() => setIsStockModalOpen(false)}
+      />
+
+
+      {/* =========================
           TABLE CONTAINER
       ========================= */}
 
@@ -941,60 +1005,69 @@ export default function Product() {
 
                           <div className="flex items-center justify-center gap-2">
 
-                            <button
-                              onClick={() =>
-                                setEditProduct(
-                                  product
-                                )
-                              }
-                              className="
-                                p-2.5
-                                rounded-xl
-                                bg-emerald-50
-                                hover:bg-emerald-100
-                                text-emerald-700
-                                border
-                                border-emerald-200/80
-                                transition-all
-                                active:scale-90
-                              "
-                              title="Edit Produk"
-                            >
+                            {!isKasir ? (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    setEditProduct(
+                                      product
+                                    )
+                                  }
+                                  className="
+                                    p-2.5
+                                    rounded-xl
+                                    bg-emerald-50
+                                    hover:bg-emerald-100
+                                    text-emerald-700
+                                    border
+                                    border-emerald-200/80
+                                    transition-all
+                                    active:scale-90
+                                  "
+                                  title="Edit Produk"
+                                >
 
-                              <Pencil size={16} />
+                                  <Pencil size={16} />
 
-                            </button>
+                                </button>
 
 
-                            <button
-                              onClick={() =>
-                                setDeleteProductId(
-                                  product.id
-                                )
-                              }
-                              className="
-                                p-2.5
-                                rounded-xl
-                                bg-rose-50
-                                hover:bg-rose-100
-                                text-rose-700
-                                border
-                                border-rose-200/80
-                                transition-all
-                                active:scale-90
-                              "
-                              title="Hapus Produk"
-                            >
+                                <button
+                                  onClick={() =>
+                                    setDeleteProductId(
+                                      product.id
+                                    )
+                                  }
+                                  className="
+                                    p-2.5
+                                    rounded-xl
+                                    bg-rose-50
+                                    hover:bg-rose-100
+                                    text-rose-700
+                                    border
+                                    border-rose-200/80
+                                    transition-all
+                                    active:scale-90
+                                  "
+                                  title="Hapus Produk"
+                                >
 
-                              <Trash2 size={16} />
+                                  <Trash2 size={16} />
 
-                            </button>
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-xs text-gray-300 font-medium">
+                                —
+                              </span>
+                            )}
 
                           </div>
 
                         </td>
 
                       </tr>
+
                     );
                   }
                 )

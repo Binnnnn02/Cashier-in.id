@@ -10,6 +10,7 @@ import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { StoreProvider } from "./context/StoreContext";
 import { ProductProvider } from "./context/ProductContext";
+import { RoleProvider } from "./context/RoleContext";
 
 createRoot(document.getElementById("root")).render(
 
@@ -19,20 +20,24 @@ createRoot(document.getElementById("root")).render(
 
       <AuthProvider>
 
-        <StoreProvider>
+        <RoleProvider>
 
-          <ProductProvider>
+          <StoreProvider>
 
-            <App />
+            <ProductProvider>
 
-            <Toaster
-              position="top-right"
-              reverseOrder={false}
-            />
+              <App />
 
-          </ProductProvider>
+              <Toaster
+                position="top-right"
+                reverseOrder={false}
+              />
 
-        </StoreProvider>
+            </ProductProvider>
+
+          </StoreProvider>
+
+        </RoleProvider>
 
       </AuthProvider>
 

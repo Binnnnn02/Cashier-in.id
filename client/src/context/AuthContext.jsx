@@ -7,6 +7,26 @@ import {
 
 import { supabase } from "../lib/supabaseClient";
 
+// Setelah user berhasil login/daftar, coba linkkan user_id ke record staff
+// berdasarkan email (jika owner sudah menambahkan email ini ke tabel staff)
+async function tryLinkStaffAccount(userId, email) {
+  if (!userId || !email) return;
+
+  const { data: staffRecord } = await supabase
+    .from("staff")
+    .select("id, user_id")
+    .eq("email", email.toLowerCase())
+    .is("user_id", null)
+    .maybeSingle();
+
+  if (staffRecord) {
+    await supabase
+      .from("staff")
+      .update({ user_id: userId })
+      .eq("id", staffRecord.id);
+  }
+}
+
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -79,6 +99,9 @@ export function AuthProvider({ children }) {
       email: data.user.email,
     });
 
+    // Linkkan ke record staff jika belum terhubung
+    await tryLinkStaffAccount(data.user.id, data.user.email);
+
     return { success: true };
 
   };
@@ -102,6 +125,12 @@ export function AuthProvider({ children }) {
         message: error.message,
       };
 
+    }
+
+    // Jika ada sesi langsung (tidak perlu konfirmasi email),
+    // linkkan ke record staff jika ada
+    if (data.session?.user) {
+      await tryLinkStaffAccount(data.session.user.id, email);
     }
 
     return {

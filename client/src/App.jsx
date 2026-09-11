@@ -13,11 +13,15 @@ import Statistics from "./pages/Statistics";
 import Settings from "./pages/Settings";
 import Account from "./pages/Account";
 import History from "./pages/History";
+import Staff from "./pages/Staff";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import SubscriptionLocked from "./pages/SubscriptionLocked";
 import NotFound from "./pages/NotFound";
+
+import RequirePermission from "./components/common/RequirePermission";
+
 
 function LoadingScreen() {
 
@@ -133,14 +137,20 @@ export default function App() {
           element={<Dashboard />}
         />
 
+        {/* Produk: semua role bisa akses, tapi kasir dapat tampilan terbatas */}
         <Route
           path="products"
           element={<Products />}
         />
 
+        {/* Statistik: owner & admin saja */}
         <Route
           path="statistics"
-          element={<Statistics />}
+          element={
+            <RequirePermission permission="statistics">
+              <Statistics />
+            </RequirePermission>
+          }
         />
 
         <Route
@@ -148,14 +158,29 @@ export default function App() {
           element={<History />}
         />
 
+        {/* Pengaturan: owner & admin saja */}
         <Route
           path="settings"
-          element={<Settings />}
+          element={
+            <RequirePermission permission="settings">
+              <Settings />
+            </RequirePermission>
+          }
         />
 
         <Route
           path="account"
           element={<Account />}
+        />
+
+        {/* Kelola Staff: owner saja */}
+        <Route
+          path="staff"
+          element={
+            <RequirePermission permission="staff">
+              <Staff />
+            </RequirePermission>
+          }
         />
 
       </Route>

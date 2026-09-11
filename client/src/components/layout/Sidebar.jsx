@@ -6,47 +6,72 @@ import {
   User,
   Store,
   History,
+  Users,
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
 import { useStore } from "../../context/StoreContext";
+import { useRole } from "../../context/RoleContext";
+import { ROLE_LABELS, ROLE_COLORS } from "../../lib/permissions";
 
-const menus = [
+// Semua item menu + permission yang dibutuhkan
+const ALL_MENUS = [
   {
     name: "Dashboard",
     icon: LayoutDashboard,
     path: "/",
+    permission: "dashboard",
   },
   {
     name: "Produk",
     icon: Package,
     path: "/products",
+    permission: "products:stock", // kasir punya permission ini → bisa masuk
   },
   {
     name: "Statistik",
     icon: BarChart3,
     path: "/statistics",
+    permission: "statistics",
   },
   {
     name: "Riwayat",
     icon: History,
     path: "/history",
+    permission: "history",
   },
   {
     name: "Pengaturan",
     icon: Settings,
     path: "/settings",
+    permission: "settings",
+  },
+  {
+    name: "Kelola Staff",
+    icon: Users,
+    path: "/staff",
+    permission: "staff",
   },
   {
     name: "Akun",
     icon: User,
     path: "/account",
+    permission: null, // semua role bisa akses akun
   },
 ];
 
 export default function Sidebar({ closeSidebar }) {
 
   const { store } = useStore();
+  const { role, hasPermission } = useRole();
+
+  // Filter menu sesuai role (null permission = selalu tampil)
+  const visibleMenus = ALL_MENUS.filter(
+    (menu) => menu.permission === null || hasPermission(menu.permission)
+  );
+
+  const roleColors = ROLE_COLORS[role] ?? ROLE_COLORS.kasir;
+  const roleLabel = ROLE_LABELS[role] ?? role;
 
   return (
 
@@ -87,7 +112,7 @@ export default function Sidebar({ closeSidebar }) {
           Menu Utama
         </p>
 
-        {menus.map((menu) => {
+        {visibleMenus.map((menu) => {
 
           const Icon = menu.icon;
 
@@ -136,9 +161,21 @@ export default function Sidebar({ closeSidebar }) {
 
       </nav>
 
-      {/* Footer Branding */}
+      {/* Footer: Role Badge + Branding */}
 
-      <div className="p-4 mx-4 mb-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+      <div className="p-4 mx-4 mb-4 rounded-2xl bg-emerald-50 border border-emerald-100 space-y-2">
+
+        {/* Role badge */}
+        {role && (
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-500 font-semibold">
+              Login sebagai
+            </span>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${roleColors.badge}`}>
+              {roleLabel}
+            </span>
+          </div>
+        )}
 
         <div className="flex items-center justify-between text-xs">
 
