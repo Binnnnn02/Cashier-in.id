@@ -9,7 +9,7 @@ import { supabase } from "../lib/supabaseClient";
 
 // Setelah user berhasil login/daftar, coba linkkan user_id ke record staff
 // berdasarkan email (jika owner sudah menambahkan email ini ke tabel staff)
-async function tryLinkStaffAccount(userId, email) {
+export async function tryLinkStaffAccount(userId, email) {
   if (!userId || !email) return;
 
   const { data: staffRecord } = await supabase

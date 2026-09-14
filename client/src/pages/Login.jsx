@@ -36,7 +36,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
-    const result = await login(email, password);
+    const result = await login(email.trim().toLowerCase(), password);
     setLoading(false);
 
     if (result.success) {

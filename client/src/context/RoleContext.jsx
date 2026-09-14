@@ -6,7 +6,7 @@ import {
 } from "react";
 
 import { supabase } from "../lib/supabaseClient";
-import { useAuth } from "./AuthContext";
+import { useAuth, tryLinkStaffAccount } from "./AuthContext";
 import { canAccess } from "../lib/permissions";
 
 const RoleContext = createContext();
@@ -39,6 +39,11 @@ export function RoleProvider({ children }) {
       }
 
       setRoleLoading(true);
+
+      // Coba klaim baris undangan staff (kalau ada & belum ke-link) SEBELUM
+      // mengecek role. Ini idempotent — kalau sudah pernah ke-link atau
+      // memang bukan staff, ini tidak melakukan apa-apa.
+      await tryLinkStaffAccount(admin.id, admin.email);
 
       // Cek apakah user ini terdaftar sebagai staff
       const { data: staffData, error } = await supabase
@@ -82,6 +87,12 @@ export function RoleProvider({ children }) {
    */
   const hasPermission = (perm) => canAccess(role, perm);
 
+  // ID toko yang datanya SEBENARNYA dipakai (profiles/products/transactions).
+  // Kalau user ini staff, datanya ikut ke toko pemiliknya (store_id),
+  // BUKAN uid staff itu sendiri (soalnya staff bisa saja punya
+  // baris "profiles" kosong sendiri dari proses daftar akun).
+  const effectiveProfileId = staffProfile?.store_id || admin?.id || null;
+
   return (
 
     <RoleContext.Provider
@@ -90,6 +101,7 @@ export function RoleProvider({ children }) {
         staffProfile,
         roleLoading,
         hasPermission,
+        effectiveProfileId,
       }}
     >
 

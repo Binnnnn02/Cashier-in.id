@@ -8,7 +8,7 @@ import {
 
 import { supabase } from "../lib/supabaseClient";
 import { playCashSound } from "../lib/sound";
-import { useAuth } from "./AuthContext";
+import { useRole } from "./RoleContext";
 import { useStore } from "./StoreContext";
 
 const ProductContext = createContext();
@@ -47,7 +47,7 @@ const mapTransaction = (row) => ({
 
 export function ProductProvider({ children }) {
 
-  const { admin } = useAuth();
+  const { effectiveProfileId, roleLoading } = useRole();
 
   const { store } = useStore();
 
@@ -73,7 +73,11 @@ export function ProductProvider({ children }) {
 
     const loadData = async () => {
 
-      if (!admin?.id) {
+      // Tunggu RoleContext selesai menentukan Owner/staff, supaya
+      // effectiveProfileId yang dipakai sudah pasti ID toko yang benar.
+      if (roleLoading) return;
+
+      if (!effectiveProfileId) {
 
         if (active) {
           setProducts([]);
@@ -98,12 +102,12 @@ export function ProductProvider({ children }) {
         supabase
           .from("products")
           .select("*")
-          .eq("profile_id", admin.id)
+          .eq("profile_id", effectiveProfileId)
           .order("created_at", { ascending: true }),
         supabase
           .from("transactions")
           .select("*, transaction_items(*)")
-          .eq("profile_id", admin.id)
+          .eq("profile_id", effectiveProfileId)
           .order("created_at", { ascending: false }),
       ]);
 
@@ -133,7 +137,7 @@ export function ProductProvider({ children }) {
       active = false;
     };
 
-  }, [admin?.id]);
+  }, [effectiveProfileId, roleLoading]);
 
 
   /* =========================
@@ -142,13 +146,13 @@ export function ProductProvider({ children }) {
 
   const addProduct = async (product) => {
 
-    if (!admin?.id) return { success: false };
+    if (!effectiveProfileId) return { success: false };
 
     const { data, error } = await supabase
       .from("products")
       .insert({
 
-        profile_id: admin.id,
+        profile_id: effectiveProfileId,
         name: product.name,
         category: product.category || "",
         price: Number(product.price) || 0,
@@ -179,7 +183,7 @@ export function ProductProvider({ children }) {
 
   const updateProduct = async (product) => {
 
-    if (!admin?.id) return { success: false };
+    if (!effectiveProfileId) return { success: false };
 
     const { data, error } = await supabase
       .from("products")
@@ -195,7 +199,7 @@ export function ProductProvider({ children }) {
 
       })
       .eq("id", product.id)
-      .eq("profile_id", admin.id)
+      .eq("profile_id", effectiveProfileId)
       .select()
       .single();
 
@@ -219,13 +223,13 @@ export function ProductProvider({ children }) {
 
   const deleteProduct = async (id) => {
 
-    if (!admin?.id) return { success: false };
+    if (!effectiveProfileId) return { success: false };
 
     const { error } = await supabase
       .from("products")
       .delete()
       .eq("id", id)
-      .eq("profile_id", admin.id);
+      .eq("profile_id", effectiveProfileId);
 
     if (error) {
 
@@ -403,7 +407,7 @@ export function ProductProvider({ children }) {
 
   const clearCart = async (paymentInfo = {}) => {
 
-    if (cart.length === 0 || !admin?.id) return null;
+    if (cart.length === 0 || !effectiveProfileId) return null;
 
     const subtotal = cart.reduce(
       (sum, item) => sum + item.price * item.qty,
@@ -437,7 +441,7 @@ export function ProductProvider({ children }) {
       .from("transactions")
       .insert({
 
-        profile_id: admin.id,
+        profile_id: effectiveProfileId,
         invoice,
         cashier: store.owner || "Admin",
 
@@ -469,7 +473,7 @@ export function ProductProvider({ children }) {
     const itemRows = cart.map((item) => ({
 
       transaction_id: trxRow.id,
-      profile_id: admin.id,
+      profile_id: effectiveProfileId,
       product_id: item.id,
       name: item.name,
       price: item.price,
@@ -502,7 +506,7 @@ export function ProductProvider({ children }) {
           .from("products")
           .update({ stock: current.stock })
           .eq("id", item.id)
-          .eq("profile_id", admin.id);
+          .eq("profile_id", effectiveProfileId);
 
       })
 
@@ -555,7 +559,7 @@ export function ProductProvider({ children }) {
 
   const voidTransaction = async (id) => {
 
-    if (!admin?.id) return { success: false };
+    if (!effectiveProfileId) return { success: false };
 
     const trx = history.find((h) => h.id === id);
 
@@ -570,7 +574,7 @@ export function ProductProvider({ children }) {
       .from("transactions")
       .update({ status: "void" })
       .eq("id", id)
-      .eq("profile_id", admin.id);
+      .eq("profile_id", effectiveProfileId);
 
     if (trxError) {
 
@@ -608,7 +612,7 @@ export function ProductProvider({ children }) {
           .from("products")
           .update({ stock: newStock })
           .eq("id", item.productId)
-          .eq("profile_id", admin.id);
+          .eq("profile_id", effectiveProfileId);
 
       })
 
@@ -636,22 +640,22 @@ export function ProductProvider({ children }) {
 
   const resetAllData = async () => {
 
-    if (!admin?.id) return { success: false };
+    if (!effectiveProfileId) return { success: false };
 
     const { error: itemsError } = await supabase
       .from("transaction_items")
       .delete()
-      .eq("profile_id", admin.id);
+      .eq("profile_id", effectiveProfileId);
 
     const { error: trxError } = await supabase
       .from("transactions")
       .delete()
-      .eq("profile_id", admin.id);
+      .eq("profile_id", effectiveProfileId);
 
     const { error: productsError } = await supabase
       .from("products")
       .delete()
-      .eq("profile_id", admin.id);
+      .eq("profile_id", effectiveProfileId);
 
     if (itemsError || trxError || productsError) {
 

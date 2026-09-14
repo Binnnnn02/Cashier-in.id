@@ -52,7 +52,7 @@ export default function Register() {
     setLoading(true);
 
     const result = await register(
-      email,
+      email.trim().toLowerCase(),
       password,
       storeName
     );

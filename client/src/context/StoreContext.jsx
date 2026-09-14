@@ -6,7 +6,7 @@ import {
 } from "react";
 
 import { supabase } from "../lib/supabaseClient";
-import { useAuth } from "./AuthContext";
+import { useRole } from "./RoleContext";
 
 const StoreContext = createContext();
 
@@ -101,7 +101,7 @@ const toRow = (patch) => {
 
 export function StoreProvider({ children }) {
 
-  const { admin } = useAuth();
+  const { effectiveProfileId, staffProfile, roleLoading } = useRole();
 
   const [store, setStoreState] = useState(defaultStore);
 
@@ -113,7 +113,11 @@ export function StoreProvider({ children }) {
 
     const loadProfile = async () => {
 
-      if (!admin?.id) {
+      // Tunggu RoleContext selesai menentukan apakah user ini Owner
+      // atau staff, supaya effectiveProfileId yang dipakai sudah pasti benar.
+      if (roleLoading) return;
+
+      if (!effectiveProfileId) {
 
         if (active) {
           setStoreState(defaultStore);
@@ -129,7 +133,7 @@ export function StoreProvider({ children }) {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", admin.id)
+        .eq("id", effectiveProfileId)
         .maybeSingle();
 
       if (!active) return;
@@ -147,14 +151,16 @@ export function StoreProvider({ children }) {
 
         setStoreState(fromRow(data));
 
-      } else {
+      } else if (!staffProfile) {
 
         // Self-healing: kalau trigger auto-create profil gagal/belum jalan,
         // buat baris profil manual di sini supaya app tetap bisa dipakai.
+        // Hanya dilakukan untuk Owner (bukan staff), karena staff tidak
+        // boleh membuat baris profil atas nama toko orang lain.
         const { data: created, error: insertError } =
           await supabase
             .from("profiles")
-            .insert({ id: admin.id })
+            .insert({ id: effectiveProfileId })
             .select()
             .single();
 
@@ -176,12 +182,12 @@ export function StoreProvider({ children }) {
       active = false;
     };
 
-  }, [admin?.id]);
+  }, [effectiveProfileId, roleLoading, staffProfile]);
 
   // Update sebagian field toko (langsung ke Supabase, lalu update state lokal)
   const updateStore = async (patch) => {
 
-    if (!admin?.id) {
+    if (!effectiveProfileId) {
 
       return {
         success: false,
@@ -193,7 +199,7 @@ export function StoreProvider({ children }) {
     const { data, error } = await supabase
       .from("profiles")
       .update(toRow(patch))
-      .eq("id", admin.id)
+      .eq("id", effectiveProfileId)
       .select()
       .single();
 
