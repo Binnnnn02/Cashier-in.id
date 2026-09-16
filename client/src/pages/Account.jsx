@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import EditProfileModal from "../components/account/EditProfileModal";
 import ChangePasswordModal from "../components/account/ChangePasswordModal";
 import RenewSubscriptionModal from "../components/account/RenewSubscriptionModal";
+import LogoutConfirmModal from "../components/account/LogoutConfirmModal";
 
 import {
   User,
@@ -125,11 +126,9 @@ export default function Account() {
   // LOGOUT
   // ==========================================================
 
-  const logout = async () => {
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-    if (!window.confirm("Yakin ingin logout dari akun ini?")) {
-      return;
-    }
+  const handleConfirmLogout = async () => {
 
     await authLogout();
 
@@ -690,7 +689,7 @@ export default function Account() {
 
 
           <button
-            onClick={logout}
+            onClick={() => setShowLogoutModal(true)}
             className="
               flex
               items-center
@@ -802,6 +801,12 @@ export default function Account() {
         key={openRenewSubscription ? "renew-open" : "renew-closed"}
         open={openRenewSubscription}
         onClose={() => setOpenRenewSubscription(false)}
+      />
+
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleConfirmLogout}
       />
 
     </div>
